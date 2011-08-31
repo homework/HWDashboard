@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+      var events  = io.connect('http://localhost/events'),
+          stats   = io.connect('http://localhost/stats')
+
+      events.on('message', function(data) {
+        $('#events').append($('<p>').append(data));
+      });
+
+      stats.on('network_stream', function(bytes, packets) {
+        $('#stats').append($('<p>').append("Bytes: " + bytes + ", Packets: " + packets));
+      });
+
+
+    </script>
+  </head>
+  <body>
+    <p>Events</p>
+    <div id="events" style="height:200px"></div>
+    <p>Stats</p>
+    <div id="stats" style="height:200px"></div>
+  </body>
+</html>

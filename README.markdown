@@ -1,3 +1,9 @@
+HWDBService
+===========
+
+Implementation Plan
+-------------------
+
 Homebase represents a simple mockup of the base architecture in discussion. It will just implement users 
 and the ability to selectively push requests up and downstream to users. It's purpose is to ensure any 
 interaction with web users can be achieved with ease through a decoupled interface that does not 
@@ -17,3 +23,35 @@ Homebase <-REST-> Node <--> Client
 
 Step 4: Have Homebase subscribe to HWDB and selectively push data downstream
 HWDB-RPC <--> JScriptRPC <--> Homebase <--> Node <--> Client
+
+Installation
+------------
+
+Install Node.JS, npm, nodeunit(for nodeunit command line)
+
+then
+
+    npm install express
+    npm install socket.io
+    npm install nodeunit
+    npm install coffeescript
+    npm install uglify-js
+
+#### Starting the server
+
+node lib/hwdbservice.min.js
+
+Development
+-----------
+
+To autogenerate CoffeeScript as you write it, call
+
+    cake watch
+
+Build tests with
+
+    cake build:test
+
+and run them with
+
+    nodeunit test/js/hwdbservice_test.js
