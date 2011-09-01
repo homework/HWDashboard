@@ -26,7 +26,8 @@ rest_server.post('/stats', (req, res) ->
     res.json({result : false})
 )
 
-rest_server.listen(3010, ->
-  addr = rest_server.address()
-  console.log("Started Express server")
-)
+if !module.parent
+  rest_server.listen(3010, ->
+    addr = rest_server.address()
+    console.log("Started Express server")
+  )
