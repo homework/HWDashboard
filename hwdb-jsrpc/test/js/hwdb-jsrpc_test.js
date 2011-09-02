@@ -1,27 +1,26 @@
 (function() {
-  var RPCState;
-  RPCState = {
-    IDLE: 0,
-    QACK_SENT: 1,
-    RESPONSE_SENT: 2,
-    CONNECT_SENT: 3,
-    QUERY_SENT: 4,
-    AWAITING_RESPONSE: 5,
-    TIMEDOUT: 6,
-    DISCONNECT_SENT: 7,
-    FRAGMENT_SENT: 8,
-    FACK_RECEIVED: 9,
-    FRAGMENT_RECEIVED: 10,
-    FACK_SENT: 11,
-    SEQNO_SENT: 12,
-    CACK_SENT: 13
-  };
-  TestCase("Setting states", {
-    setUp: function() {
-      return this.jsrpc = new JSRPC();
+  var Command, JSRPC, RPCState, jc, testCase;
+  testCase = require('nodeunit').testCase;
+  JSRPC = require('../../lib/hwdb-jsrpc.min').jsrpc;
+  jc = new JSRPC();
+  RPCState = jc.getRPCStates();
+  Command = jc.getCommands();
+  exports['Tests from initial state'] = testCase({
+    setUp: function(callback) {
+      this.jc_obj = new JSRPC();
+      return callback();
     },
-    "test_initial": function() {
-      return assertEquals(RPCState.IDLE, this.jsrpc.getState());
+    test_initial: function(test) {
+      test.equals(RPCState.IDLE, this.jc_obj.getState());
+      return test.done();
+    },
+    test_connect: function(test) {
+      this.jc_obj.connect();
+      test.equals(RPCState.CONNECT_SENT, this.jc_obj.getState());
+      return test.done();
+    },
+    tearDown: function(callback) {
+      return callback();
     }
   });
 }).call(this);

@@ -1,7 +1,6 @@
-var JSRPC, net;
-net = require('net');
+var JSRPC;
 JSRPC = (function() {
-  var Command, RPCState, state;
+  var Command, RPCState, outbound_socket, state, udp;
   function JSRPC() {}
   Command = {
     ERROR: 0,
@@ -37,6 +36,8 @@ JSRPC = (function() {
     CACK_SENT: 13
   };
   state = RPCState.IDLE;
+  udp = require('dgram');
+  outbound_socket = udp.createSocket("udp4");
   JSRPC.prototype.getCommands = function() {
     return Command;
   };
@@ -46,12 +47,22 @@ JSRPC = (function() {
   JSRPC.prototype.getState = function() {
     return state;
   };
-  JSRPC.prototype.sendCommand = function(command, newState) {
+  JSRPC.prototype.getBytes = function(newCommand, seq_no, sub_port) {
+    return "HWDB";
+  };
+  JSRPC.prototype.sendBytes = function(data) {
+    var prepped_data;
+    prepped_data = new Buffer(data);
+    return outbound_socket.send(prepped_data, 0, prepped_data.length, 987, 'localhost');
+  };
+  JSRPC.prototype.sendCommand = function(newCommand, newState) {
+    this.sendBytes(this.getBytes(newCommand, 0, 0));
     return state = newState;
   };
   JSRPC.prototype.connect = function(address, port) {
-    return this.sendCommand(Command.CONNECT, RPCState.CONNECT_SENT);
+    this.sendCommand(Command.CONNECT, RPCState.CONNECT_SENT);
+    return outbound_socket.close();
   };
   return JSRPC;
 })();
-exports.jsrpc = new JSRPC;
+exports.jsrpc = JSRPC;

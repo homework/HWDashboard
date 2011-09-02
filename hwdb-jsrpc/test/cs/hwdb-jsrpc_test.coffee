@@ -1,22 +1,26 @@
-RPCState =
-  IDLE              : 0,
-  QACK_SENT         : 1,
-  RESPONSE_SENT     : 2,
-  CONNECT_SENT      : 3,
-  QUERY_SENT        : 4,
-  AWAITING_RESPONSE : 5,
-  TIMEDOUT          : 6,
-  DISCONNECT_SENT   : 7,
-  FRAGMENT_SENT     : 8,
-  FACK_RECEIVED     : 9,
-  FRAGMENT_RECEIVED : 10,
-  FACK_SENT         : 11,
-  SEQNO_SENT        : 12,
-  CACK_SENT         : 13
+testCase  = require('nodeunit').testCase
+JSRPC     = require('../../lib/hwdb-jsrpc.min').jsrpc
+jc        = new JSRPC()
+RPCState  = jc.getRPCStates()
+Command   = jc.getCommands()
 
-TestCase("Setting states", {
-  setUp : ->
-    this.jsrpc = new JSRPC()
-  "test_initial" : ->
-    assertEquals(RPCState.IDLE, this.jsrpc.getState())#this.jsrpc.RPCState.IDLE)
+exports['Tests from initial state'] = testCase({
+
+  setUp : (callback) ->
+    @jc_obj = new JSRPC()
+    callback()
+
+  test_initial : (test) ->
+    test.equals(RPCState.IDLE, @jc_obj.getState())
+    test.done()
+
+  test_connect : (test) ->
+    @jc_obj.connect()
+    test.equals(RPCState.CONNECT_SENT, @jc_obj.getState())
+    test.done()
+
+  tearDown : (callback) ->
+    callback()
+
 })
+

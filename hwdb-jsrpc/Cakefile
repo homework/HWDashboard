@@ -79,12 +79,11 @@ task 'watch:test', 'Watch test specs and build changes', ->
             fs.watchFile "#{testSrcCoffeeDir}/#{file}", (curr, prev) ->
                 if +curr.mtime isnt +prev.mtime
                     coffee testCoffeeOpts, "#{testSrcCoffeeDir}/#{file}"
-                    exec 'java -jar $JSTESTDRIVER_HOME/JsTestDriver-1.3.2.jar --tests all', (err,stdout,stderr) ->
-                      console.log err, stdout, stderr
-                      if err?
-                        console.log stderr
-                      else
-                        console.log stdout
+                    #exec "nodeunit #{testSrcCoffeeDir}/#{file}", (err,stdout,stderr) ->
+                    #  if stderr? and stderr is not ''
+                    #    console.log stderr
+                    #  else
+                    #    console.log stdout
 
 
 task 'build:test', 'Build individual test specs', ->
@@ -105,7 +104,7 @@ task 'uglify', 'Minify and obfuscate', ->
         final_code = pro.gen_code ast # compressed code here
     
         fs.writeFile prodTargetJsMinFile, final_code
-        fs.unlink prodTargetJsFile, (err) -> handleError(err) if err
+        #fs.unlink prodTargetJsFile, (err) -> handleError(err) if err
         
         message = "Uglified #{prodTargetJsMinFile}"
         util.log message
