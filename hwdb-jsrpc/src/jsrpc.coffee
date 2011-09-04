@@ -37,6 +37,12 @@ class JSRPC
   udp = require 'dgram'
   outbound_socket = udp.createSocket "udp4"
 
+  seqNo = 1
+  subPort = Math.floor(Math.random() * 4294967296)
+
+  connectAddress  = '192.168.1.1'
+  connectPort     = 987
+
   getCommands: ->
     Command
   
@@ -46,19 +52,38 @@ class JSRPC
   getState: ->
     state
 
-  getBytes: (newCommand, seq_no, sub_port) ->
-    "HWDB"
+  intToByteArray: (number, width) ->
+    bArray = []
+    hex_string = number.toString(16)
+    if ((hex_string.length % 2) isnt 0)
+      hex_string = "0" + hex_string
+    bArray.push(0) for x in [0...( (hex_string.length/2) - width )]
+    for i in [0...(hex_string.length/2)]
+      bArray.push parseInt(hex_string[(i*2)..(i*2)+1], 16)
+    return bArray
+ 
+  sendCommand: (command, data, sub_port, seq_no) ->
+    byteArray = []
 
-  sendBytes: (data) ->
-    prepped_data = new Buffer(data)
-    outbound_socket.send(prepped_data, 0, prepped_data.length, 987, 'localhost')
+    byteArray = byteArray.concat( this.intToByteArray(sub_port, 4) )
+    byteArray = byteArray.concat( this.intToByteArray(seq_no, 4) )
+    byteArray = byteArray.concat( this.intToByteArray(command, 2) )
 
-  sendCommand: (newCommand, newState) ->
-    this.sendBytes( this.getBytes(newCommand, 0, 0))
-    state = newState
+    byteArray.push 1 # Fragment
+    byteArray.push 1 # Fragment Count
+
+    for i in [0...data.length]
+      byteArray.push data.charCodeAt(i)
+
+    prepped_data = new Buffer(byteArray)
+    outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
 
   connect: (address, port) ->
-    this.sendCommand(Command.CONNECT, RPCState.CONNECT_SENT)
+    if address? and port?
+      connectAddress = address
+      connectPort    = port
+    this.sendCommand(Command.CONNECT, "HWDB\0", subPort, seqNo)
+    state = RPCState.CONNECT_SENT # State callbacks?
     outbound_socket.close()
 
 exports.jsrpc = JSRPC

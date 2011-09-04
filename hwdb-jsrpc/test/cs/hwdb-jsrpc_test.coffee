@@ -24,3 +24,4 @@ exports['Tests from initial state'] = testCase({
 
 })
 
+#Test intToByteArray with even/odd hex and width paddings, max integer, low integer, out of range(width)
