@@ -1,5 +1,5 @@
 testCase  = require('nodeunit').testCase
-JSRPC     = require('../../lib/hwdb-jsrpc.min').jsrpc
+JSRPC     = require('../../lib/jsrpc').jsrpc
 jc        = new JSRPC()
 RPCState  = jc.getRPCStates()
 Command   = jc.getCommands()
