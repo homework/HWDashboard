@@ -1,7 +1,6 @@
 (function() {
-  var JSRPC, Packeteer, pktr;
-  Packeteer = require('./packeteer').packeteer;
-  pktr = new Packeteer();
+  var JSRPC, pktr;
+  pktr = require('./packeteer').packeteer;
   JSRPC = (function() {
     var Command, RPCState, seqNo, state, subPort;
     function JSRPC() {}
@@ -41,6 +40,9 @@
     state = RPCState.IDLE;
     seqNo = 1;
     subPort = Math.floor(Math.random() * 4294967296);
+    pktr.on('command', function(sub_port, seq_no, command, data) {
+      return console.log(sub_port, seq_no, command, data);
+    });
     JSRPC.prototype.getCommands = function() {
       return Command;
     };
@@ -57,8 +59,7 @@
         connectPort = port;
       }
       pktr.sendCommand(Command.CONNECT, "HWDB\0", subPort, seqNo);
-      state = RPCState.CONNECT_SENT;
-      return pktr.close();
+      return pktr.listen();
     };
     return JSRPC;
   })();

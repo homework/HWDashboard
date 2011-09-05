@@ -7,15 +7,16 @@
     child.prototype = new ctor;
     child.__super__ = parent.prototype;
     return child;
-  };
+  }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   EventEmitter = require('events').EventEmitter;
   Packeteer = (function() {
-    var connectAddress, connectPort, outbound_socket, udp;
+    var connectAddress, connectPort, inbound_socket, outbound_socket, udp;
     __extends(Packeteer, EventEmitter);
     function Packeteer() {
       Packeteer.__super__.constructor.apply(this, arguments);
     }
     udp = require('dgram');
+    inbound_socket = udp.createSocket("udp4");
     outbound_socket = udp.createSocket("udp4");
     connectAddress = '192.168.1.1';
     connectPort = 987;
@@ -34,6 +35,21 @@
       }
       return bArray;
     };
+    Packeteer.prototype.bufToInt = function(buf, width) {
+      var byteString, hex_char, x, _ref, _ref2;
+      byteString = "";
+      for (x = 0, _ref = width - buf.length; 0 <= _ref ? x < _ref : x > _ref; 0 <= _ref ? x++ : x--) {
+        byteString += "00";
+      }
+      for (x = 0, _ref2 = buf.length; 0 <= _ref2 ? x < _ref2 : x > _ref2; 0 <= _ref2 ? x++ : x--) {
+        hex_char = buf[x].toString(16);
+        if (hex_char.length === 1) {
+          byteString += "0";
+        }
+        byteString += hex_char;
+      }
+      return parseInt(byteString, 16);
+    };
     Packeteer.prototype.sendCommand = function(command, data, sub_port, seq_no) {
       var byteArray, i, prepped_data, _ref;
       byteArray = [];
@@ -48,10 +64,23 @@
       prepped_data = new Buffer(byteArray);
       return outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress);
     };
+    Packeteer.prototype.listen = function() {
+      inbound_socket.on("message", __bind(function(msg) {
+        var command, data, frag_count, fragment, seq_no, sub_port;
+        sub_port = this.bufToInt(msg.slice(0, 4), 4);
+        seq_no = this.bufToInt(msg.slice(4, 8), 4);
+        command = this.bufToInt(msg.slice(8, 10), 2);
+        fragment = this.bufToInt(msg.slice(10, 11), 1);
+        frag_count = this.bufToInt(msg.slice(11, 12), 1);
+        data = (msg.slice(12)).toString();
+        return this.emit("command", sub_port, seq_no, command, data);
+      }, this));
+      return inbound_socket.bind(outbound_socket.address().port);
+    };
     Packeteer.prototype.close = function() {
       return outbound_socket.close();
     };
     return Packeteer;
   })();
-  exports.packeteer = Packeteer;
+  exports.packeteer = new Packeteer;
 }).call(this);

@@ -3,6 +3,7 @@ EventEmitter = require('events').EventEmitter
 class Packeteer extends EventEmitter
 
   udp = require 'dgram'
+  inbound_socket  = udp.createSocket "udp4"
   outbound_socket = udp.createSocket "udp4"
 
   connectAddress  = '192.168.1.1'
@@ -18,6 +19,16 @@ class Packeteer extends EventEmitter
       bArray.push parseInt(hex_string[(i*2)..(i*2)+1], 16)
     return bArray
  
+  bufToInt: (buf, width) ->
+    byteString = ""
+    byteString += "00" for x in [0...( width - buf.length )]
+    for x in [0...buf.length]
+      hex_char = buf[x].toString(16)
+      if hex_char.length is 1
+        byteString += "0"
+      byteString += hex_char
+    parseInt(byteString,16)
+
   sendCommand: (command, data, sub_port, seq_no) ->
     byteArray = []
 
@@ -34,7 +45,19 @@ class Packeteer extends EventEmitter
     prepped_data = new Buffer(byteArray)
     outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
 
+  listen: ->
+    inbound_socket.on("message", (msg) =>
+      sub_port    = this.bufToInt(msg.slice(0,4),4)
+      seq_no      = this.bufToInt(msg.slice(4,8),4)
+      command     = this.bufToInt(msg.slice(8,10),2)
+      fragment    = this.bufToInt(msg.slice(10,11),1)
+      frag_count  = this.bufToInt(msg.slice(11,12),1)
+      data        = (msg.slice(12)).toString()
+      @emit "command", sub_port, seq_no, command, data
+    )
+    inbound_socket.bind( outbound_socket.address().port )
+
   close: ->
     outbound_socket.close()
 
-exports.packeteer = Packeteer
+exports.packeteer = new Packeteer

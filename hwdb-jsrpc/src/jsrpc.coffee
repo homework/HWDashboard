@@ -1,5 +1,4 @@
-Packeteer = require('./packeteer').packeteer
-pktr = new Packeteer()
+pktr = require('./packeteer').packeteer
 
 class JSRPC
 
@@ -41,6 +40,10 @@ class JSRPC
   seqNo = 1
   subPort = Math.floor(Math.random() * 4294967296)
 
+  pktr.on 'command', (sub_port, seq_no, command, data) -> 
+    console.log(sub_port, seq_no, command, data)
+    #Insert state machine here
+
   getCommands: ->
     Command
   
@@ -55,7 +58,7 @@ class JSRPC
       connectAddress = address
       connectPort    = port
     pktr.sendCommand(Command.CONNECT, "HWDB\0", subPort, seqNo)
-    state = RPCState.CONNECT_SENT # State callbacks?
-    pktr.close()
+    pktr.listen()
+    #pktr.close()
 
 exports.jsrpc = JSRPC
