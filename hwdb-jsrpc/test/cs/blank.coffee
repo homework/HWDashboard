@@ -1,5 +1,5 @@
 testCase  = require('nodeunit').testCase
-JSRPC     = require('../../lib/jsrpc').jsrpc
-jc        = new JSRPC()
-
+jc = require('../../lib/jsrpc').jsrpc
 jc.connect()
+jc.query("SQL:subscribe SysLast 192.168.1.78 ")
+

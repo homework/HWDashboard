@@ -8,6 +8,7 @@ class Packeteer extends EventEmitter
 
   connectAddress  = '192.168.1.1'
   connectPort     = 987
+  lport = 0
 
   intToByteArray: (number, width) ->
     bArray = []
@@ -31,11 +32,9 @@ class Packeteer extends EventEmitter
 
   sendCommand: (command, data, sub_port, seq_no) ->
     byteArray = []
-
     byteArray = byteArray.concat( this.intToByteArray(sub_port, 4) )
     byteArray = byteArray.concat( this.intToByteArray(seq_no, 4) )
     byteArray = byteArray.concat( this.intToByteArray(command, 2) )
-
     byteArray.push 1 # Fragment
     byteArray.push 1 # Fragment Count
 
@@ -43,7 +42,9 @@ class Packeteer extends EventEmitter
       byteArray.push data.charCodeAt(i)
 
     prepped_data = new Buffer(byteArray)
+    console.log "Sending " + command
     outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
+    @emit 'command_sent', sub_port, seq_no, command, data
 
   listen: ->
     inbound_socket.on("message", (msg) =>
@@ -53,11 +54,14 @@ class Packeteer extends EventEmitter
       fragment    = this.bufToInt(msg.slice(10,11),1)
       frag_count  = this.bufToInt(msg.slice(11,12),1)
       data        = (msg.slice(12)).toString()
+      console.log "Receiving " + command
       @emit "command", sub_port, seq_no, command, data
     )
     inbound_socket.bind( outbound_socket.address().port )
+    inbound_socket.address().port
 
   close: ->
+    inbound_socket.close()
     outbound_socket.close()
 
 exports.packeteer = new Packeteer

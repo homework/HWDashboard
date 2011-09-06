@@ -10,7 +10,7 @@
   }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   EventEmitter = require('events').EventEmitter;
   Packeteer = (function() {
-    var connectAddress, connectPort, inbound_socket, outbound_socket, udp;
+    var connectAddress, connectPort, inbound_socket, lport, outbound_socket, udp;
     __extends(Packeteer, EventEmitter);
     function Packeteer() {
       Packeteer.__super__.constructor.apply(this, arguments);
@@ -20,6 +20,7 @@
     outbound_socket = udp.createSocket("udp4");
     connectAddress = '192.168.1.1';
     connectPort = 987;
+    lport = 0;
     Packeteer.prototype.intToByteArray = function(number, width) {
       var bArray, hex_string, i, x, _ref, _ref2;
       bArray = [];
@@ -62,7 +63,9 @@
         byteArray.push(data.charCodeAt(i));
       }
       prepped_data = new Buffer(byteArray);
-      return outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress);
+      console.log("Sending " + command);
+      outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress);
+      return this.emit('command_sent', sub_port, seq_no, command, data);
     };
     Packeteer.prototype.listen = function() {
       inbound_socket.on("message", __bind(function(msg) {
@@ -73,11 +76,14 @@
         fragment = this.bufToInt(msg.slice(10, 11), 1);
         frag_count = this.bufToInt(msg.slice(11, 12), 1);
         data = (msg.slice(12)).toString();
+        console.log("Receiving " + command);
         return this.emit("command", sub_port, seq_no, command, data);
       }, this));
-      return inbound_socket.bind(outbound_socket.address().port);
+      inbound_socket.bind(outbound_socket.address().port);
+      return inbound_socket.address().port;
     };
     Packeteer.prototype.close = function() {
+      inbound_socket.close();
       return outbound_socket.close();
     };
     return Packeteer;

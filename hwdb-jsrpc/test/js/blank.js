@@ -1,7 +1,7 @@
 (function() {
-  var JSRPC, jc, testCase;
+  var jc, testCase;
   testCase = require('nodeunit').testCase;
-  JSRPC = require('../../lib/jsrpc').jsrpc;
-  jc = new JSRPC();
+  jc = require('../../lib/jsrpc').jsrpc;
   jc.connect();
+  jc.query("SQL:subscribe SysLast 192.168.1.78 ");
 }).call(this);
