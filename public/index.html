@@ -1,0 +1,295 @@
+<!DOCTYPE html> 
+<!--[if lt IE 7]> <html class="no-js ie6" lang="en"> <![endif]--> 
+<!--[if IE 7]>    <html class="no-js ie7" lang="en"> <![endif]--> 
+<!--[if IE 8]>    <html class="no-js ie8" lang="en"> <![endif]--> 
+<!--[if gt IE 8]><!-->  <html class="no-js" lang="en"> <!--<![endif]--> 
+<head> 
+  <meta charset="utf-8"> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+  
+  <title>Homework Project Intern - James Pickup</title> 
+  
+  <meta name="viewport" content="width=1024, user-scalable=no"> 
+  
+  <!-- Core and extension CSS files --> 
+  <link rel="stylesheet" href="/deck.js/core/deck.core.css"> 
+  <link rel="stylesheet" href="/deck.js/extensions/goto/deck.goto.css"> 
+  <link rel="stylesheet" href="/deck.js/extensions/menu/deck.menu.css"> 
+  <link rel="stylesheet" href="/deck.js/extensions/status/deck.status.css"> 
+  <link rel="stylesheet" href="/deck.js/extensions/hash/deck.hash.css"> 
+  
+  <!-- Theme CSS files (menu swaps these out) --> 
+  <link rel="stylesheet" id="transition-theme-link" href="/deck.js/themes/transition/horizontal-slide.css"> 
+  
+  <!-- Custom CSS just for this page --> 
+  <link rel="stylesheet" href="/homeworkproject/project.css"> 
+  <link rel="stylesheet" href="/homeworkproject/rain.css">
+  
+  <script src="/scripts/modernizr.custom.js"></script> 
+</head> 
+ 
+<body class="deck-container"> 
+ 
+<div class="slide" id="title-slide"> 
+  <div id="title-page-container">
+    <div id="title-container">
+      <div id="hw_title">Researching and presenting user trends for Homework</div>
+      <div id="hw_subtitle">Intern - James Pickup</div>
+    </div>
+   <div id="hw_connect">If you are using a laptop/tablet, please connect to the "hometest" router using password "whatever". Use http://proxy.nottingham.ac.uk:8080 as a proxy for internet access.</div>
+  </div>
+</div>
+ 
+<div class="slide" id="who-am-i"> 
+  <h2>Who am I?</h2> 
+  <ul> 
+    <li>
+      <p>Graduated at UoN this year with a CS Hons degree (what a surprise)</p>
+    </li>
+    <li> 
+      <p>Major interest in information security</p>
+    </li> 
+    <li>
+      <p>Like to play with new web tech as a hobbie and previously as a freelancer</p>
+    </li> 
+    <li>
+      <p>I like pretty graphs</p>
+    </li>
+  </ul>
+  <div class="slide" id="why-am-i-working-on-homework">
+    <h2>Why are you working on homework?</h2>
+    <ul>
+      <li>
+        <p>Final year dissertation "Towards an Anomaly Identification System for Home Networks"</p>
+      </li>
+      <li>
+        <p>Explored the use of entropy to monitor network state, and thus, identify an anomaly</p>
+      </li>
+      <li>
+        <p>Fortunately, Tom Rodden skimmed through my draft and offered me an internship</p>
+      </li>
+    </ul>
+  </div>
+</div> 
+ 
+<div class="slide" id="entropy-demonstration">
+  <h2>Demonstrating entropy</h2> 
+  <img src="/homeworkproject/images/entropy.png"/>
+</div> 
+ 
+<div class="slide" id="entropy-retrospective"> 
+  <h2>Retrospective on entropy</h2> 
+  <ul>
+    <li>
+      <p>It is sensitive; unfortunately, <i>too</i> sensitive</p>
+    </li>
+    <li>
+      <p>It's great for measuring state from one time period to the next</p>
+    </li>
+    <li>
+      <p>Changes in state do not always equal negative affects on the network (false positives)</p>
+    </li>
+    <li>
+      <p>Home network traffic is highly erratic. There is no "base" state</p>
+    </li>
+  </ul>
+  <div class="slide" id="working-with-homework">
+    <h2>Goals of working with Homework</h2>
+    <p style="margin-bottom:0px">Users are somewhat predictable in their internet activity, so:</p>
+    <ul>
+      <li>
+        <p>Can we pick those trends out, amongst the chaos?</p>
+      </li>
+      <li>
+        <p>What can we learn from the network that the user wants to know?</p>
+      </li>
+      <li>
+        <p>How much of this can we do automatically?</p>
+      </li>
+    </ul>
+  </div>
+
+</div> 
+ 
+<div class="slide" id="initial-methodology"> 
+  <h2>Initial methodology</h2>
+  <ul>
+    <li>
+      <p>Pick a busy 7-day period of persisted HWDB data to analyse</p>
+    </li>
+    <li>
+      <p>Break the data down into 24-hour periods and graph minute-by-minute values for:</p>
+      <ul class="nested-list">
+        <li>Total bytes/packets/flows</li>
+        <li>log2( Total bytes/packets/flows )</li>
+        <li>Internal vs External bytes/packets/flows</li>
+        <li>Internal IP entropy, External IP entropy</li>
+        <li>Change in internal IP entropy, Change in external IP entropy</li>
+        <li>Total wireless retries</li>
+      </ul>
+    </li>
+    <li>
+      <p>Calculated for the whole network and each internal IP</p>
+    </li>
+    <li>
+      <p>24-hour and 8-hour view</p>
+    <li>
+    <p>Data processed from files in Python</p>
+    </li>
+    <li>
+      <p>Used PyRRD (wrapper for RRDTool) to populate round-robin database and generate graphs</p>
+    </li>
+    <li>
+      <p>Generated around 4900 graphs in total</p>
+    </li>
+  </ul>
+</div> 
+
+<div class="slide" id="rrd-graphs">
+  <h2>Viewing the graphs</h2>
+  <img src="/homeworkproject/images/rrdgraphs.png"/>
+</div>
+ 
+<div class="slide" id="what-was-found">
+  <h2>What was found</h2>
+  <ul>
+    <li>
+      <p>Sadly, not much</p>
+    </li>
+    <li>
+      <p>There were clear peaks and troughs whose cause could be inferred</p>
+    </li>
+    <li>
+      <p>There were not visible trends across multiple time periods or IPs</p>
+    </li>
+    <li>
+      <p>Trends were not well defined enough, and certainly not to be found through an automated method</p>
+    </li>
+  </ul>
+  <div class="slide" id="moving-on">
+    <h2>Moving on..</h2>
+    <ul>
+      <li>
+        <p>Normalize the data</p>
+      </li>
+      <li>
+        <p>Focus on the shape of traffic and less so on the magnitude</p>
+      </li>
+      <li>
+        <p>Do mondays always look like mondays? Does Joe always look like Joe?</p>
+      </li>
+      <li>
+        <p>If so, it is feasible we can map the shape</p>
+      </li>
+    </li>
+  </div>
+</div>
+
+<div class="slide" id="7day-bytes">
+  <h2>Same week - log2( normalized( bytes ) ) - Smoothed</h2>
+  <img src="/homeworkproject/images/7day_bytes.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+<div class="slide" id="mondays">
+  <h2>Mondays - log2( normalized( bytes ) ) - Smoothed - Upside down</h2>
+  <img src="/homeworkproject/images/full_month_mondays.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+
+<div class="slide" id="saturdays">
+  <h2>Saturdays - log2( normalized( bytes ) ) - Smoothed - Upside down</h2>
+  <img src="/homeworkproject/images/full_month_saturdays.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+
+<div class="slide" id="sundays">
+  <h2>Sundays - log2( normalized( bytes ) ) - Smoothed - Upside down</h2>
+  <img src="/homeworkproject/images/full_month_sundays.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+
+<div class="slide" id="mondays-user">
+  <h2>Individual user - Mondays - log2( normalized( bytes ) ) - Smoothed</h2>
+  <img src="/homeworkproject/images/users_monday.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+
+<div class="slide" id="tuesdays-user">
+  <h2>Individual user - Tuesdays - log2( normalized( bytes ) ) - Smoothed</h2>
+  <img src="/homeworkproject/images/users_tuesday.png"/>
+  <img src="/homeworkproject/images/timeline.png"/>
+</div>
+
+<div class="slide" id="progress-to-date">
+  <h2>Progress to date</h2>
+  <ul>
+    <li>
+      <p>Patterns are beginning to emerge</p>
+    </li>
+    <li>
+      <p>Further scrutinizing the patterns to ensure they actually have meaning</p>
+    </li>
+    <li>
+      <p>Verifying blips in "shape" with actual "magnitude"</p>
+    </li>
+  </ul>
+  <div class="slide" id="the-future">
+    <h2>Thinking about the future</h2>
+    <ul>
+      <li>
+        <p>How can we actually present something to the user, that they care about?</p>
+      </li>
+
+</div>
+
+<div class="slide" id="moving-away">
+  <h2>Moving away from all the analysis</h2>
+  How can we present this to the user
+</div>
+
+<div class="slide" id="elements-blockquotes"> 
+  <h2>Other Elements: Blockquotes</h2> 
+  <blockquote cite="http://example.org"> 
+    <p>Food is an important part of a balanced diet.</p> 
+    <p><cite>Fran Lebowitz</cite></p> 
+  </blockquote> 
+  <pre><code>&lt;blockquote cite=&quot;http://example.org&quot;&gt;
+  &lt;p&gt;Food is an important part of a balanced diet.&lt;/p&gt;
+  &lt;p&gt;&lt;cite&gt;Fran Lebowitz&lt;/cite&gt;&lt;/p&gt;
+&lt;/blockquote&gt;</code></pre> 
+</div> 
+ 
+ 
+<div class="slide" id="digging-deeper"> 
+  <h2>Digging Deeper</h2> 
+  <p>If you want to learn about making your own themes, extending deck.js, and more, check out the&nbsp;<a href="/deck.js/docs/">documentation</a>.</p> 
+</div> 
+ 
+<p class="deck-status"> 
+  <span class="deck-status-current"></span> 
+  /
+  <span class="deck-status-total"></span> 
+</p> 
+ 
+<form action="." method="get" class="goto-form"> 
+  <label for="goto-slide">Go to slide:</label> 
+  <input type="number" name="slidenum" id="goto-slide"> 
+  <input type="submit" value="Go"> 
+</form> 
+ 
+<a href="." title="Permalink to this slide" class="deck-permalink">#</a> 
+ 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script> 
+<script>window.jQuery || document.write('<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.6.1.min.js">\x3C/script>')</script> 
+ 
+<!-- Deck Core and extensions --> 
+<script src="/deck.js/core/deck.core.js"></script> 
+<script src="/deck.js/extensions/menu/deck.menu.js"></script> 
+<script src="/deck.js/extensions/goto/deck.goto.js"></script> 
+<script src="/deck.js/extensions/status/deck.status.js"></script> 
+<script src="/deck.js/extensions/hash/deck.hash.js"></script> 
+ 
+<!-- Specific to this page --> 
+<script src="/homeworkproject/project.js"></script> 
+ 
+</body> 

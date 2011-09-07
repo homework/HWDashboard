@@ -1,0 +1,69 @@
+Slide 1: Title and please connect
+Slide 2: Who am I? Why am I here?
+Slide 3: Entropy Dissertation
+Slide 4: Retrospective on entropy
+		Too sensitive
+		Works but false positives too
+		Home networks are highly unpredictable
+
+Slide 5: Initial task and goals
+		Trends
+		Network health
+		Can we determine if something is up?
+Slide 6: Researching metrics
+		7 day period from lodge household
+		Graphs for
+			Bytes, Packets..
+		for a 24 hour period
+		Looked at network as a whole and individual IP's
+Slide 7: Metrics Graph
+		Explain standard deviations etc
+
+Slide 8: Findings
+		Sadly, not much
+		As humans we can spot peaks and troughs and infer what may have happened
+		But there were no clear trends across multiple days/IPs
+		And we need clear trends to be able to "teach" the computer
+
+Slide 9: Moving on..
+		Normalize the data
+		Try and find shapes
+		A busy day and a quiet day will have widely different magnitudes
+		but what if they have the same "shape"
+		That's a trend right?
+		Feasible a computer can learn a shape
+		We can monitor deviations from a shape etc etc
+Slide 10: 7 day graph
+Slide 11: Monday
+Slide 12: Tuesday
+Slide 13: User slide
+Slide 14: User slide
+Slide 15: Progress to date
+		Patterns are still visible
+		Placing this data next to values of magnitude to determine how much of a blip from the normal trend a blip really is
+Slide 16: 
+		Thinking about how we can present this to the user so it means something
+		Holy Grail: Mapping unidentified traffic data to a user
+		Opens up a world of possibilities:
+
+Slide 17: The problem is..
+		There is no easy way for us to get this data off the router and onto a web dashboard realtime
+		We could create a client-side JS interface
+			but it'd be really chunky
+			would probably have to modify it a lot
+			a lot of control from just JS (read: security)
+			couldn't connect to the dashboard remotely
+		We could have a client-side Java applet
+			it'd work for creating individual applications
+			lots of web applications would be a lot of redundancy
+			Java applets are just a pain
+			and most importantly, all the fantastic visualization libraries and interfaces available today are in JS/HTML5
+
+Slide 18: It has to be server-side
+		But also..I wanted it to be
+			Easy for anyone to quickly create a new web application
+			Lightweight
+			Loosely coupled
+			Fast!
+		
+		

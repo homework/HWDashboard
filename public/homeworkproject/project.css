@@ -1,0 +1,67 @@
+body          { 
+  font-family: 'ExpresswayCondensedBookItalic';
+  color: #FEFEFF;
+  letter-spacing: 1px;
+  background: url(/homeworkproject/images/rain-noise.png) repeat;
+  background: url(/homeworkproject/images/rain-water.png) top center repeat-x, url(/homeworkproject/images/rain-noise.png) repeat;  
+}
+.deck-container { 
+display: block !important; margin: 0 auto; padding: 0 2em; color: #fefeff; text-shadow: #000 2px 2px 4px;
+font-size: 1.0em;
+}
+
+/* override centered */
+h1, h2, h3 { text-align: left; margin: 0 }
+p          { text-align: left; margin: 0 }
+.deck-container h2 { font-size: 3.4em }
+.deck-container h3 { font-size: 1.8em }
+.deck-container li h3 { font-size: 1.3em }
+.deck-container li p { font-size: 1.3em; margin: 0; }
+.deck-container p             { font-size: 2.7em }
+.deck-container li             { font-size: 1.8em }
+.deck-container small             { font-size: 2.1em }
+.deck-container ul { padding: 20px 0; }
+
+h1, h2, h3, b, em { font-family: 'ExpresswayCondensedSemiBoldIt'; color: #FEFEFF; }
+.deck-container { color: #FEFEFF; }
+
+ul, ol    { list-style-position: inside }
+ul        { list-style-type: disc; }
+ol        { list-style-type: decimal }
+.not      { text-decoration: line-through }
+a         { color: #CAB853; text-decoration: none; border-bottom: 1px dotted #CAB853 }
+em        { font-family: 'ExpresswayCondensedSemiBoldIt' }
+
+#title-page-container {
+  padding: 0 48px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  text-align: center;
+  height: 100%;
+  -webkit-transform: translate3d(0, -50%, 0);
+  -moz-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  -o-transform: translate(0, -50%);
+  transform: translate3d(0, -50%, 0);
+}
+
+#title-container { padding-top: 21em; }
+
+#hw_title {
+  font-size: 4.5em;
+}
+
+#hw_subtitle {
+  font-size: 3.5em;
+}
+
+#hw_connect {
+  font-size: 2.5em;
+  padding-top: 15%;
+}
+
+.nested-list li {
+  font-size: 0.9em;
+}
