@@ -1,10 +1,22 @@
 (function() {
-  var JSRPC, pktr;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var EventEmitter, JSRPC, hwdbparser, pktr;
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  EventEmitter = require('events').EventEmitter;
   pktr = require('./packeteer').packeteer;
+  hwdbparser = require('./hwdbparser').hwdbparser;
   JSRPC = (function() {
     var Command, RPCState, lport, seqNo, state, subPort;
-    function JSRPC() {}
+    __extends(JSRPC, EventEmitter);
+    function JSRPC() {
+      JSRPC.__super__.constructor.apply(this, arguments);
+    }
     Command = {
       ERROR: 0,
       CONNECT: 1,
@@ -41,36 +53,40 @@
     seqNo = 0;
     subPort = Math.floor(Math.random() * 4294967296);
     lport = 0;
-    pktr.on('command', __bind(function(sub_port, seq_no, command, data) {
-      switch (command) {
-        case Command.CONNECT:
-          console.log("Got CONNECT");
-          pktr.sendCommand(Command.CACK, "", sub_port, seq_no);
-          return state = RPCState.IDLE;
-        case Command.CACK:
-          console.log("Got CACK");
-          return state = RPCState.IDLE;
-        case Command.QACK:
-          console.log("Got QACK");
-          return state = RPCState.AWAITING_RESPONSE;
-        case Command.RESPONSE:
-          console.log("Got RESPONSE:", data.slice(4));
-          pktr.sendCommand(Command.RACK, "", sub_port, seq_no);
-          return state = RPCState.RACK;
-        case Command.QUERY:
-          console.log("Got QUERY:", data);
-          pktr.sendCommand(Command.QACK, "", sub_port, seq_no);
-          state = RPCState.QACK_SENT;
-          pktr.sendCommand(Command.RESPONSE, "OK\0", sub_port, seq_no);
-          return state = RPCState.RESPONSE_SENT;
-        case Command.RACK:
-          console.log("Got RACK");
-          return state = RPCState.IDLE;
-        case Command.PING:
-          console.log("PING!");
-          return pktr.sendCommand(Command.PACK);
-      }
-    }, JSRPC));
+    JSRPC.prototype.setuplol = function() {
+      return pktr.on("command", __bind(function(sub_port, seq_no, command, data) {
+        switch (command) {
+          case Command.CONNECT:
+            console.log("Got CONNECT");
+            pktr.sendCommand(Command.CACK, "", sub_port, seq_no);
+            return state = RPCState.IDLE;
+          case Command.CACK:
+            console.log("Got CACK");
+            return state = RPCState.IDLE;
+          case Command.QACK:
+            console.log("Got QACK");
+            return state = RPCState.AWAITING_RESPONSE;
+          case Command.RESPONSE:
+            console.log("Got RESPONSE:", data.slice(4));
+            this.emit('message', hwdbparser.parseQueryOrResponse(data.slice(4)));
+            pktr.sendCommand(Command.RACK, "", sub_port, seq_no);
+            return state = RPCState.RACK;
+          case Command.QUERY:
+            console.log("Got QUERY:", data.slice(4));
+            this.emit('message', hwdbparser.parseQueryOrResponse(data.slice(4)));
+            pktr.sendCommand(Command.QACK, "", sub_port, seq_no);
+            state = RPCState.QACK_SENT;
+            pktr.sendCommand(Command.RESPONSE, "OK\0", sub_port, seq_no);
+            return state = RPCState.RESPONSE_SENT;
+          case Command.RACK:
+            console.log("Got RACK");
+            return state = RPCState.IDLE;
+          case Command.PING:
+            console.log("PING!");
+            return pktr.sendCommand(Command.PACK);
+        }
+      }, this));
+    };
     JSRPC.prototype.getCommands = function() {
       return Command;
     };
@@ -82,6 +98,7 @@
     };
     JSRPC.prototype.connect = function(address, port) {
       var connectAddress, connectPort;
+      this.setuplol();
       if ((address != null) && (port != null)) {
         connectAddress = address;
         connectPort = port;
@@ -105,6 +122,6 @@
       return pktr.close();
     };
     return JSRPC;
-  }).call(this);
+  })();
   exports.jsrpc = new JSRPC;
 }).call(this);

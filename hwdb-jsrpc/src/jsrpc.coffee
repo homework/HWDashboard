@@ -1,6 +1,8 @@
-pktr = require('./packeteer').packeteer
+EventEmitter  = require('events').EventEmitter
+pktr          = require('./packeteer').packeteer
+hwdbparser    = require('./hwdbparser').hwdbparser
 
-class JSRPC
+class JSRPC extends EventEmitter
 
   Command = 
     ERROR       : 0,
@@ -40,7 +42,7 @@ class JSRPC
   subPort = Math.floor(Math.random() * 4294967296)
   lport = 0
 
-  pktr.on 'command', (sub_port, seq_no, command, data) =>
+  pktr.on("command", (sub_port, seq_no, command, data) =>
     switch command
       when Command.CONNECT
         console.log "Got CONNECT"
@@ -54,10 +56,12 @@ class JSRPC
         state = RPCState.AWAITING_RESPONSE
       when Command.RESPONSE
         console.log "Got RESPONSE:", data.slice(4)
+        @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
         pktr.sendCommand(Command.RACK, "", sub_port, seq_no)
         state = RPCState.RACK
       when Command.QUERY
-        console.log "Got QUERY:", data
+        console.log "Got QUERY:", data.slice(4)
+        @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
         pktr.sendCommand(Command.QACK, "", sub_port, seq_no)
         state = RPCState.QACK_SENT
         pktr.sendCommand(Command.RESPONSE, "OK\0", sub_port, seq_no)
@@ -68,7 +72,6 @@ class JSRPC
       when Command.PING
         console.log "PING!"
         pktr.sendCommand(Command.PACK)
-
 
   getCommands: ->
     Command
