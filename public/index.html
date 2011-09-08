@@ -4,8 +4,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
 
-      var events  = io.connect('http://localhost/events'),
-          stats   = io.connect('http://localhost/stats')
+      var events  = io.connect('http://192.168.1.1/events'),
+          stats   = io.connect('http://192.168.1.1/stats')
 
       events.on('message', function(data) {
         $('#events').append($('<p>').append(data));
