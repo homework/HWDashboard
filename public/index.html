@@ -240,7 +240,7 @@
         <p>How can we actually present something to the user, that they care about?</p>
       </li>
       <li>
-        <p>Web visualization and interface libraries are getting to be really impressive these days</p>
+        <p>Web visualization and interface libraries are really impressive these days</p>
       </li>
       <li>
         <p>But how do we get from HWDB to the web?</p>
@@ -249,65 +249,195 @@
   </div>
 </div>
 
-<div class="slide" id="client-solution">
-  <h2>Client Solutions</h2>
-  PROS
-  CONS
+<div class="slide" id="client-pros">
+  <h2>Client Solutions - Connecting to HWDB, straight from the browser</h2>
+  <h3>Pros</h3>
+  <ul>
+    <li>
+     <p>If we use Java, the RPC interface already exists</p>
+    </li>
+    <li>
+      <p>You can do anything you want with HWDB from the browser</p>
+    </li>
+  </ul>
+  <div class="slide" id="client-cons">
+    <h3>Cons</h3>
+    <ul>
+      <li>
+        <p>You can do anything you want with HWDB from the browser</p>
+      </li>
+      <li>
+        <p>Every new web interface will require the latest version of the library</p>
+      </li>
+      <li>
+        <p>The library would be heavy, just for a client to interact</p>
+      </li>
+      <li>
+        <p>We can't connect to the router from a remote location</p>
+      </li>
+      <li>
+        <p>Dealing with multiple users would not be fun</p>
+      </li>
+    </ul>
+  </div>
+</div>
 
-  <div class="slide" id="server-solution">
-    <h2>Server Solutions</h2>
-    PROS
-    CONS
+<div class="slide" id="server-pros">
+  <h2>Server Solutions</h2>
+  <h3>Pros</h3>
+  <ul>
+    <li>
+      <p>Easy to manage users</p>
+    </li>
+    <li>
+    <p></p>
+    </li>
+  </ul>
+  <div class="slide" id="server-cons">
+    <h3>Cons</h3>
+    <ul>
+      <li>
+        <p>We have to setup the server</p>
+      </li>
+
+      <li>
+        <p>New features have to be coded in server-side too</p>
+      </li>
+    </ul>
   </div>
 </div>
 
 <div class="slide" id="meet-hwdbwebservice">
   <h2>Meet HWDBWebService</h2>
-  DESIGN GOALS
-  IMAGE
-  
-  HOW DO I IMPLEMENT IT
-  JRPC bindings came out, tried with jWebSockets took 40mins just setting up environment, java was making me nauseous
-  My solution: Node.JS + Socket.IO
+  <div style="">
+    <div style="float:left">
+      <h3>Design Goals</h3>
+      <ul>
+        <li>
+          <p>Trivial to setup</p>
+        </li>
+         <li>
+          <p>Small learning curve to develop server <-> client interaction</p>
+        </li>
+        <li>
+          <p>Loosely coupled components</p>
+        </li>
+        <li>
+          <p>Minimal application logic required</p>
+        </li>
+        <li>
+          <p>Can be exposed if need be (e.g. notifications)
+        </li>
+      </ul>
+      <div class="slide" id="choose-your-weapon"> 
+        <h3>Choose your weapon</h3>
+        <ul>
+          <li>
+            <p>Node.JS</p>
+          </li>
+          <li>
+            <p>Socket.IO</p>
+          </li>
+          <li>
+            <p>CoffeeScript</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <img src="/homeworkproject/images/hwdbwebservice.png" style="float:right;margin-right:0em"/>
+  </div>
 </div>
 
 <div class="slide" id="node-js">
   <h2>Node dot what?</h2>
-  Server-side JavaScript server
-  Asynchronous Event based I/O
-  Based on Google's V8 engine
-  Open source and consistently being developed for
-  Blisteringly fast
-  Quick to setup
-  A dream to code for
+  <ul>
+    <li>
+      <p>Asynchronous event based JavaScript server</p>
+    </li>
+    <li>
+      <p>Based on Google's V8 engine</p>
+    </li>
+    <li>
+      <p>Open source with consistent updates to stable and unstable branches</p>
+    </li>
+    <li>
+      <p>It is ridiculously fast</p>
+    </li>
+    <li>
+      <p>Easy to setup</p>
+    </li>
+    <li>
+      <p>A dream to code for, with a shift in mindset</p>
+    </li>
+  </ul>
+  <div class="slide" id="npm">
+    <h2>Node Package Manager(npm)</h2>
+    <ul>
+      <li>
+        <p>Socket.IO:  Realtime transport with WebSockets, JavaScript and if necessary, can revert to flash</p>
+      <li>
+        <p>CoffeeScript: Intuitive version of JavaScript. Write in CS, transcompile to JS</p>
+      </li>
+      <li>
+        <p>Express.JS: A small but fast web server</p>
+      </li>
+    </ul>
+  </div>
 </div>
 
-<div class="slide" id="npm">
-  <h2>Node Package Manager(npm)</h2>
-  Node.JS allows plugins which are managed by the npm database
-  One-line installs for extended functionality
-  Socket.IO:  Realtime interaction with browsers as old as IE 5.5 using a combination of 
-  javascript, websockets and if necessary, a revert back to flash
-  CoffeeScript: An intuitive version of JavaScript, you develop in it and it compiles straight 
-  down to javascript
-  Express.JS: A small but fast web server
+<div class="slide" id="demo">
+  <h2>Demo</h2>
+  <iframe src="graph.html" style="width:100%;height:100%"></iframe>
 </div>
 
-<div class="slide" id="why">
-  <h2>Why all of this</h2>
-  Goal is to ferry data back and forth between the backend
-  Much of the realtime data will be through pub/sub
-  Pushing data down from HWDB to a browser is intuitively an event based process
-  Event based coding and loose coupling are best buddies
+<div class="slide" id="hwdb-ws-request">
+  <h2>Example query</h2>
+  <div style="float:left;width:60em">
+    <h3>HWDBWebService</h3>
+    <blockquote>
+      <pre><code>
+      stats_jsrpc  = require('./jsrpc').jsrpc
+      stats_jsrpc.connect()
+      </code></pre>
+    </blockquote>
+
+    <h3>JSRPC</h3>
+    <blockquote>
+      <pre><code>
+      pktr = require('./packeteer').packeteer
+
+      ...
+
+      connect: (address, port) ->
+
+        pktr.on("command", (sub_port, seq_no, command, data) =>
+          switch command
+            STATE MACHINE
+        )
+
+        if address? and port?
+          connectAddress = address
+          connectPort    = port
+
+        pktr.sendCommand(Command.CONNECT, "HWDB\0", subPort, seqNo)
+        state = RPCState.CONNECT_SENT
+        lport = pktr.listen()
+      </code></pre>
+    </blockquote>
+
+    <h3>Packeteer</h3>
+    <blockquote>
+      <pre><code>
+        sendCommand: (command, data, sub_port, seq_no) ->
+          outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
+      </code></pre>
+    </blockquote>
+
+  </div>
+  <img src="/homeworkproject/images/hwdbwebservice_inside.png" style="float:right"/>
 </div>
 
-<div class="slide" id="design-pictures">
-  <h2>This should help</h2>
-  PICTURE OF DESIGN
-</div>
-
-I have created a statcollector.c which periodically aggregates #bytes #packets from the flow table
-Demo
+<div class="slide">
 HWDBWebService connects with JSRPC, sends query
 HWDBWebService calls Packeteer.sendCommand(Command.CONNECT) and changes state
 Packeteer crafts the packet and sends it, without any knowledge of Commands or States
@@ -316,17 +446,15 @@ HWDBRPC sends ""
 Packeteer decodes the packet and emits the Command, sub_port, seq_no
 JSRPC sees that it is a query, calls the data parser and emits
 HWDBWebService listens for that new message
+</div>
 
+<div class="slide">
 Diagram for HWDBWebService to client
 Show server and client code
 Here we create the JSRPC interface and bind it to a socket.io channel
+</div>
 
-This may seem like a lot because I've explained the entire process
-but really, all you need is a few lines of code in the server and the client to subscribe to a new table
-With this in place it is easy for anyone to be able to add new information into a dashboard 
-and make use of the great HTML5/javascript toolkits around to build something of value to the user
-Not to mention, this can be used for a full debugging view of the HWDB tables
-
+<div class="slide">
 Quickly, a new approach to profiling users
 A backlink is a link from another site, to your site
 Clusters and cliques naturally form from sites (for example, niche blogs)
@@ -335,31 +463,16 @@ If we retrieved this data for each domain a user visited and plotted it into a g
 where a node represents a domain and a weighted edge represents the number of backlinks, 
 we could build a model of these sites.
 And on top, overlay sites a user visits, sites a user is likely to visit and track behaviour over a time period
+</div>
 
+<div class="slide">
 Again, a user "signature" opens up many possibilities for mapping users to not only ips, but machine usage
 From yesterdays discussion: Could we determine which user is using the shared computer without external input?
 
 Relatively simple and low-cost to research
 If possible, a central system for us to observe data from multiple routers would be fantastic
+</div>
 
-<div class="slide" id="elements-blockquotes"> 
-  <h2>Other Elements: Blockquotes</h2> 
-  <blockquote cite="http://example.org"> 
-    <p>Food is an important part of a balanced diet.</p> 
-    <p><cite>Fran Lebowitz</cite></p> 
-  </blockquote> 
-  <pre><code>&lt;blockquote cite=&quot;http://example.org&quot;&gt;
-  &lt;p&gt;Food is an important part of a balanced diet.&lt;/p&gt;
-  &lt;p&gt;&lt;cite&gt;Fran Lebowitz&lt;/cite&gt;&lt;/p&gt;
-&lt;/blockquote&gt;</code></pre> 
-</div> 
- 
- 
-<div class="slide" id="digging-deeper"> 
-  <h2>Digging Deeper</h2> 
-  <p>If you want to learn about making your own themes, extending deck.js, and more, check out the&nbsp;<a href="/deck.js/docs/">documentation</a>.</p> 
-</div> 
- 
 <p class="deck-status"> 
   <span class="deck-status-current"></span> 
   /

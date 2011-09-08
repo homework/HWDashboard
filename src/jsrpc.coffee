@@ -41,6 +41,7 @@ class JSRPC extends EventEmitter
   seqNo = 0
   subPort = Math.floor(Math.random() * 4294967296)
   lport = 0
+  newQuery = ""
 
   getCommands: ->
     Command
@@ -72,17 +73,18 @@ class JSRPC extends EventEmitter
           state = RPCState.RACK
         when Command.QUERY
           console.log "Got QUERY:", data.slice(4)
-          @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
+          newQuery = data.slice(4)
           pktr.sendCommand(Command.QACK, "", sub_port, seq_no)
           state = RPCState.QACK_SENT
           pktr.sendCommand(Command.RESPONSE, "OK\0", sub_port, seq_no)
           state = RPCState.RESPONSE_SENT
         when Command.RACK
           console.log "Got RACK"
+          @emit 'message', hwdbparser.parseQueryOrResponse newQuery
           state = RPCState.IDLE
         when Command.PING
           console.log "PING!"
-          pktr.sendCommand(Command.PACK)
+          pktr.sendCommand(Command.PACK, "", sub_port, seq_no)
     
     if address? and port?
       connectAddress = address

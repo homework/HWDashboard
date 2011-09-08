@@ -14,7 +14,7 @@ font-size: 1.0em;
 h1, h2, h3 { text-align: left; margin: 0 }
 p          { text-align: left; margin: 0 }
 .deck-container h2 { font-size: 3.4em }
-.deck-container h3 { font-size: 1.8em }
+.deck-container h3 { font-size: 2.5em }
 .deck-container li h3 { font-size: 1.3em }
 .deck-container li p { font-size: 1.3em; margin: 0; }
 .deck-container p             { font-size: 2.7em }
@@ -31,6 +31,7 @@ ol        { list-style-type: decimal }
 .not      { text-decoration: line-through }
 a         { color: #CAB853; text-decoration: none; border-bottom: 1px dotted #CAB853 }
 em        { font-family: 'ExpresswayCondensedSemiBoldIt' }
+.deck-container pre { padding: 0; }
 
 #title-page-container {
   padding: 0 48px;
