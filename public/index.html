@@ -36,7 +36,7 @@
       <div id="hw_title">Researching and presenting user trends for Homework</div>
       <div id="hw_subtitle">Intern - James Pickup</div>
     </div>
-   <div id="hw_connect">If you are using a laptop/tablet, please connect to the "hometest" router using password "whatever". Use http://proxy.nottingham.ac.uk:8080 for internet access (you will need it).</div>
+   <div id="hw_connect">If you are using a laptop/tablet, please connect to the "hometest" router using password "whatever". Use http://proxy.nottingham.ac.uk:8080 for internet access.</div>
   </div>
 </div>
  
@@ -44,7 +44,7 @@
   <h2>Who am I?</h2> 
   <ul> 
     <li>
-      <p>Graduated at UoN this year with a CS Hons degree (what a surprise)</p>
+      <p>Graduated at UoN this year with a CS Hons degree</p>
     </li>
     <li> 
       <p>Major interest in information security</p>
@@ -53,7 +53,7 @@
       <p>Like to play with new web tech as a hobbie and previously as a freelancer</p>
     </li> 
     <li>
-      <p>I like pretty graphs</p>
+      <p>Worked a lot with routers over past year</p>
     </li>
   </ul>
   <div class="slide" id="why-am-i-working-on-homework">
@@ -290,7 +290,7 @@
       <p>Easy to manage users</p>
     </li>
     <li>
-    <p></p>
+    <p>Potential of loosely coupled design</p>
     </li>
   </ul>
   <div class="slide" id="server-cons">
@@ -387,7 +387,6 @@
 
 <div class="slide" id="demo">
   <h2>Demo</h2>
-  <iframe src="graph.html" style="width:100%;height:100%"></iframe>
 </div>
 
 <div class="slide" id="hwdb-ws-request">
@@ -438,39 +437,32 @@
 </div>
 
 <div class="slide">
-HWDBWebService connects with JSRPC, sends query
-HWDBWebService calls Packeteer.sendCommand(Command.CONNECT) and changes state
-Packeteer crafts the packet and sends it, without any knowledge of Commands or States
-Fast forward, lets assume we have subscribed to a table
-HWDBRPC sends ""
-Packeteer decodes the packet and emits the Command, sub_port, seq_no
-JSRPC sees that it is a query, calls the data parser and emits
-HWDBWebService listens for that new message
+  <h2>HWDBWebService component communication</h2>
+  <img src="/homeworkproject/images/hwdbwebservice_full.png"/>
 </div>
 
 <div class="slide">
-Diagram for HWDBWebService to client
-Show server and client code
-Here we create the JSRPC interface and bind it to a socket.io channel
-</div>
-
-<div class="slide">
-Quickly, a new approach to profiling users
-A backlink is a link from another site, to your site
-Clusters and cliques naturally form from sites (for example, niche blogs)
-Yahoo and other sites offer APIs to return a list of backlinks for a domain/page
-If we retrieved this data for each domain a user visited and plotted it into a graph database 
-where a node represents a domain and a weighted edge represents the number of backlinks, 
-we could build a model of these sites.
-And on top, overlay sites a user visits, sites a user is likely to visit and track behaviour over a time period
-</div>
-
-<div class="slide">
-Again, a user "signature" opens up many possibilities for mapping users to not only ips, but machine usage
-From yesterdays discussion: Could we determine which user is using the shared computer without external input?
-
-Relatively simple and low-cost to research
-If possible, a central system for us to observe data from multiple routers would be fantastic
+  <h2>Researching user profiles with backlinks</h2>
+  <ul>
+    <li>
+      <p>Backlinks are links from other sites, to your site/page</p>
+    </li>
+    <li>
+      <p>Plotted on a node-edge weighted graph you'd expect to see clusters and cliques</p>
+    </li>
+    <li>
+      <p>This information is available per domain through API requests</p>
+    </li>
+    <li>
+      <p>If a user frequently visits particular clusters/cliques, can we make that their signature?</p>
+    </li>
+    <li>
+      <p>Simple and low-cost research</p>
+    </li>
+    <li>
+      <p>Potentially a step in the right direction to automated mapping of traffic to a user</p>
+    </li>
+  </ul>
 </div>
 
 <p class="deck-status"> 
