@@ -4,7 +4,7 @@ hwdbparser    = require('./hwdbparser').hwdbparser
 
 class JSRPC extends EventEmitter
 
-  Command = 
+  Command =
     ERROR       : 0,
     CONNECT     : 1,
     CACK        : 2,
@@ -17,7 +17,7 @@ class JSRPC extends EventEmitter
     FRAGMENT    : 9,  # TODO
     FACK        : 10, # TODO
     PING        : 11, # TODO
-    PACK        : 12, 
+    PACK        : 12,
     SEQNO       : 13, # TODO
     SACK        : 14  # TODO
 
@@ -71,7 +71,8 @@ class JSRPC extends EventEmitter
         state = RPCState.IDLE
       when Command.PING
         console.log "PING!"
-        pktr.sendCommand(Command.PACK)
+        pktr.sendCommand(Command.PACK, "", sub_port, seq_no)
+  )
 
   getCommands: ->
     Command

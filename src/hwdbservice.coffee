@@ -17,7 +17,7 @@ stats = io_server
   .of('/stats')
 
 stats_jsrpc.connect()
-stats_jsrpc.query("SQL:subscribe StatsLast 192.168.1.78 ")
+stats_jsrpc.query("SQL:subscribe SysLast 192.168.1.78 ")
 
 stats_jsrpc.on('message', (data) ->
   stats.emit('network_stream', data)
