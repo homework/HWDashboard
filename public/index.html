@@ -1,27 +1,25 @@
+<!doctype html>
 <html>
+
   <head>
-    <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
+    <meta charset="utf-8"/>
+    <title></title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" media="all" href="css/style.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- Adding "maximum-scale=1" fixes the Mobile Safari auto-zoom bug: http://filamentgroup.com/examples/iosScaleBug/ -->
 
-      var events  = io.connect('http://192.168.1.1/events'),
-          stats   = io.connect('http://192.168.1.1/stats')
+    <!-- d3 graphs -->
+    <script type="text/javascript" src="scripts/d3/d3.js"></script>
+    <script type="text/javascript" src="scripts/d3/d3.layout.js"></script>
 
-      events.on('message', function(data) {
-        $('#events').append($('<p>').append(data));
-      });
-
-      stats.on('network_stream', function(data) {
-        $('#stats').append($('<p>').append("Bytes: " + data[0].bytes + ", Packets: " + data[0].packets));
-      });
-
-
-    </script>
   </head>
-  <body>
-    <p>Events</p>
-    <div id="events" style="height:200px"></div>
-    <p>Stats</p>
-    <div id="stats" style="height:200px"></div>
+  
+  <body lang="en">
+    <p class="gigantic">Win </p>
+    <script type="text/javascript" src="scripts/dashboard.js"></script>
   </body>
+  
 </html>
