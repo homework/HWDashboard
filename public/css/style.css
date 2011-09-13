@@ -86,11 +86,61 @@ cols    1     2      3      4      5      6      7      8      9      10
 px      68    160    252    344    436    528    620    712    804    896    */
 
 body {
-  width: 896px;
-  padding: 72px 48px 84px;
-  background: rgb(232,232,232);
-  color: rgb(60,60,60);
+  width: 100%;
+  background: rgb(222,234,237) url('/transparent_clouds.png');
+  color: #444444;/*rgb(60,60,60);*/
+  color: white;
   -webkit-text-size-adjust: 100%; /* Stops Mobile Safari from auto-adjusting font-sizes */
+}
+
+#header {
+  background: rgb(30,42,75);
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: rgb(0,139,177);
+  background: rgb(0,79,100);
+  padding: 5px 0px 7px 0px;
+  text-align: center;
+  color: rgb(255,127,14);
+  font-size: 18px;
+  font-family: Helvetica;
+}
+
+#title {
+  width: 966px;
+  background: rgb(188,227,237);
+  background: rgb(0,79,100);
+  background: rgb(0,139,177);
+  margin: 0 auto;
+  color: white;
+  padding: 13px;
+  height: 48px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 5px 5px 5px #ccc;
+}
+
+h2 { font-family: Helvetica; font-weight: bolder; font-size: 55px }
+
+#dashboard {
+  padding: 0px 48px 84px;
+  width: 896px;
+/*  background: rgb(198,239,250);*/
+  background: white;
+  color: rgb(228,63,23);
+  height: 800px;
+  margin: 10px auto 0 auto;
+  padding-top: 30px;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 5px 5px 5px #ccc;
+}
+
+#pie_chart {
+  float: left;
+}
+
+#bar_graph {
+  float: right;
 }
 
 
