@@ -40,3 +40,8 @@ if !module.parent
     addr = rest_server.address()
     console.log("Started Express server")
   )
+  #Gracefully handle termination
+  process.on 'SIGINT', ->
+    stats_jsrpc.disconnect()
+    stats_jsrpc.on 'disconnected', ->
+      process.exit(0)
