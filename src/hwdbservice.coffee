@@ -23,6 +23,11 @@ stats_jsrpc.on('message', (data) ->
   stats.emit('network_stream', data)
 )
 
+stats_jsrpc.on('timedout', ->
+  console.log "JSRPC timed out"
+  process.exit(1)
+)
+
 rest_server.get('/', (req, res) ->
     res.sendfile('public/index.html')
 )

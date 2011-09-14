@@ -12,11 +12,11 @@ class JSRPC extends EventEmitter
     QACK        : 4,
     RESPONSE    : 5,
     RACK        : 6,
-    DISCONNECT  : 7,  # TODO - test
+    DISCONNECT  : 7,
     DACK        : 8,
     FRAGMENT    : 9,  # TODO
     FACK        : 10, # TODO
-    PING        : 11, # TODO
+    PING        : 11,
     PACK        : 12,
     SEQNO       : 13, # TODO
     SACK        : 14  # TODO
@@ -37,20 +37,18 @@ class JSRPC extends EventEmitter
     SEQNO_SENT        : 12, # TODO
 
   state = RPCState.IDLE
+  connected = false
 
   outboundSeqNo = 0
   inboundSeqNo = 0
-  outboundSubPort = Math.floor(Math.random() * 4294967296)
+  outboundSubPort = Math.floor(Math.random() * 4294967294)
   inboundSubPort = 0
   lport = 0
 
   idleOutboundTimer = 0
   idleInboundTimer = 0
 
-  #TODO
-  #pingsTilPurge = ?
-  #ticksTilPing = ?
-
+  pingInterval = 15 # seconds
 
   setupCommandListener: ->
     pktr.on("command", (sub_port, seq_no, command, data) =>
@@ -76,6 +74,7 @@ class JSRPC extends EventEmitter
                 console.log "CONNECT acknowledged"
                 @setState(RPCState.IDLE, 1)
                 @emit 'connected'
+                connected = true
             when Command.QACK
               console.log "QUERY acknowledged"
               if state == RPCState.QUERY_SENT
@@ -90,6 +89,7 @@ class JSRPC extends EventEmitter
             when Command.SACK
               console.log "SEQNO acknowledged"
               @setState(RPCState.IDLE, 1)
+              @emit 'SACK'
             when Command.DACK
               console.log "DISCONNECT acknowledged"
               pktr.close()
@@ -97,6 +97,7 @@ class JSRPC extends EventEmitter
             when Command.PACK
               @clearIdleTimer(1)
               console.log "PACK cleared"
+              @setState(RPCState.IDLE, 1) # Sets up new timer
 
       else if sub_port is inboundSubPort or inboundSubPort is 0# JSRPC(Responder) <- RPCServer(Requestor)
 
@@ -113,7 +114,7 @@ class JSRPC extends EventEmitter
             @setState(RPCState.IDLE, 0)
           if state == RPCState.IDLE
             inboundSeqNo = seq_no
-            pktr.sendCommand(Command.SACK, "", sub_port, NEWSEQNO)
+            pktr.sendCommand(Command.SACK, "", sub_port, inboundSeqNo)
 
         if seq_no < inboundSeqNo
           console.log "Received old/repeat sequence number from requestor"
@@ -144,6 +145,7 @@ class JSRPC extends EventEmitter
             when Command.PACK
               @clearIdleTimer(0)
               console.log "PACK cleared"
+              @setState(RPCState.IDLE, 0) # Sets up new timer
     )
 
 
@@ -166,7 +168,8 @@ class JSRPC extends EventEmitter
   setIdleTimer: (direction, ticks=3) ->
     if ticks is 0
       @setState(RPCState.TIMEDOUT)
-      console.log "Tick timeout"
+      pktr.close()
+      @emit 'timedout'
     else if direction is 0 # inbound
       clearTimeout(idleInboundTimer)
       console.log "Setting inbound timer"
@@ -174,7 +177,7 @@ class JSRPC extends EventEmitter
         console.log "Inbound RAN"
         pktr.sendCommand(Command.PING, "", inboundSubPort, inboundSeqNo)
         @setIdleTimer(direction, ticks-1)
-      , 2000)
+      , pingInterval * 1000)
     else if direction is 1 # outbound
       clearTimeout(idleOutboundTimer)
       console.log "Setting outbound timer"
@@ -182,7 +185,7 @@ class JSRPC extends EventEmitter
         console.log "Outbound RAN"
         pktr.sendCommand(Command.PING, "", outboundSubPort, outboundSeqNo)
         @setIdleTimer(direction, ticks-1)
-      , 2000)
+      , pingInterval * 1000)
 
   clearIdleTimer: (direction) ->
     if direction is 0 # inbound
@@ -208,10 +211,21 @@ class JSRPC extends EventEmitter
     query_header =   String.fromCharCode(0) + String.fromCharCode(query.length)
     query_header +=  String.fromCharCode(0) + String.fromCharCode(query.length)
     query = query_header + query
-    this.once('connected', ->
-      pktr.sendCommand(Command.QUERY, query, outboundSubPort, ++outboundSeqNo)
-      @setState(RPCState.QUERY_SENT)
-    )
+    if connected
+      if outboundSeqNo >= 4294967294 # Wrap around
+        outboundSeqNo = 0
+        pktr.sendCommand(Command.SEQNO, "", outboundSubPort, outboundSeqNo)
+        this.once('SACK', ->
+          pktr.sendCommand(Command.QUERY, query, outboundSubPort, ++outboundSeqNo)
+        )
+      else
+        pktr.sendCommand(Command.QUERY, query, outboundSubPort, ++outboundSeqNo)
+        @setState(RPCState.QUERY_SENT)
+    else
+      this.once('connected', ->
+        pktr.sendCommand(Command.QUERY, query, outboundSubPort, ++outboundSeqNo)
+        @setState(RPCState.QUERY_SENT)
+      )
 
   disconnect: ->
     pktr.sendCommand(Command.DISCONNECT, "", outboundSubPort, outboundSeqNo)
