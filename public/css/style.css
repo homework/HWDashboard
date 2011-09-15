@@ -87,7 +87,10 @@ px      68    160    252    344    436    528    620    712    804    896    */
 
 body {
   width: 100%;
-  background: rgb(222,234,237) url('/transparent_clouds.png');
+  background: rgb(222,234,237);/* url('/transparent_clouds.png');*/
+  background: url('/texture.png');
+  background: rgb(217,217,213);
+  background: url('/linen-bg.jpg');
   color: #444444;/*rgb(60,60,60);*/
   color: white;
   -webkit-text-size-adjust: 100%; /* Stops Mobile Safari from auto-adjusting font-sizes */
@@ -109,34 +112,46 @@ body {
 
 #title {
   width: 966px;
+  width: 100%;
   background: rgb(188,227,237);
   background: rgb(0,79,100);
   background: rgb(0,139,177);
+  background: rgb(37,77,149);
+  background: url('/blue_bg.png');
+  background: url('/texture.png');
+  background: url('/linen-header.jpg');
   margin: 0 auto;
+  margin-top: 50px;
+  margin-bottom: 30px;
   color: white;
   padding: 13px;
-  height: 48px;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 5px 5px 5px #ccc;
+  height: 20px;
+  text-align: center;
+  /*border-radius: 0 0 8px 8px;*/
+  /*box-shadow: 5px 5px 5px #ccc;*/
 }
 
-h2 { font-family: Helvetica; font-weight: bolder; font-size: 55px }
+h2 { font-family: Helvetica; font-weight: bolder; font-size: 45px; margin-top: 0px; 
+  color: rgb(1,80,128);
+  color: white;
+font-family: "league-gothic-1","league-gothic-2";
+}
 
 #dashboard {
   padding: 0px 48px 84px;
   width: 896px;
 /*  background: rgb(198,239,250);*/
-  background: white;
   color: rgb(228,63,23);
   height: 800px;
-  margin: 10px auto 0 auto;
+  margin: 0px auto 0 auto;
   padding-top: 30px;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 5px 5px 5px #ccc;
+  /*border-radius: 8px 8px 0 0;
+  box-shadow: 5px 5px 5px #ccc;*/
 }
 
 #pie_chart {
   float: left;
+  margin-top: 50px;
 }
 
 #bar_graph {

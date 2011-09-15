@@ -10,8 +10,8 @@ tweenDonut = (b) ->
   return (t) ->
     return arc(i(t))
 
-p_w = 344
-p_h = 344
+p_w = 250
+p_h = 250
 r = p_w / 2
 
 data    = [
@@ -49,13 +49,14 @@ arcs    = vis.selectAll("g.arc")
  
 paths   = arcs.append("svg:path")
           .attr("fill", (d, i) -> color(i) )
-    #      .attr("d", arc)
+          .attr("d", arc)
+"""
 paths.transition()
     .ease("elastic")
     #.delay((d, i) -> (2000 + i * 50))
     .duration(750)
     .attrTween("d", tweenDonut)
-
+"""
 barHeight = 40
 b_h = (barHeight + 10) * data.length
 b_w = 528

@@ -21,8 +21,8 @@
       return arc(i(t));
     };
   };
-  p_w = 344;
-  p_h = 344;
+  p_w = 250;
+  p_h = 250;
   r = p_w / 2;
   data = [
     {
@@ -78,8 +78,8 @@
   arcs = vis.selectAll("g.arc").data(donut).enter().append("svg:g").attr("class", "arc").attr("transform", "translate(" + r + "," + r + ")");
   paths = arcs.append("svg:path").attr("fill", function(d, i) {
     return color(i);
-  });
-  paths.transition().ease("elastic").duration(750).attrTween("d", tweenDonut);
+  }).attr("d", arc);
+  "paths.transition()\n    .ease(\"elastic\")\n    #.delay((d, i) -> (2000 + i * 50))\n    .duration(750)\n    .attrTween(\"d\", tweenDonut)";
   barHeight = 40;
   b_h = (barHeight + 10) * data.length;
   b_w = 528;
