@@ -30,13 +30,13 @@ class Packeteer extends EventEmitter
       byteString += hex_char
     parseInt(byteString,16)
 
-  sendCommand: (command, data, sub_port, seq_no) ->
+  sendCommand: (command, data, sub_port, seq_no, frag_count=1, frag_no=1) ->
     byteArray = []
     byteArray = byteArray.concat( this.intToByteArray(sub_port, 4) )
     byteArray = byteArray.concat( this.intToByteArray(seq_no, 4) )
     byteArray = byteArray.concat( this.intToByteArray(command, 2) )
-    byteArray.push 1 # Fragment
-    byteArray.push 1 # Fragment Count
+    byteArray.push frag_count
+    byteArray.push frag_no
 
     for i in [0...data.length]
       byteArray.push data.charCodeAt(i)
@@ -44,18 +44,19 @@ class Packeteer extends EventEmitter
     prepped_data = new Buffer(byteArray)
     console.log "Sending " + command
     outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
-    @emit 'command_sent', sub_port, seq_no, command, data
+    @emit 'command_sent', sub_port, seq_no, command, data, frag_count, frag_no
+    # is this needed?
 
   listen: ->
     inbound_socket.on("message", (msg) =>
       sub_port    = this.bufToInt(msg.slice(0,4),4)
       seq_no      = this.bufToInt(msg.slice(4,8),4)
       command     = this.bufToInt(msg.slice(8,10),2)
-      fragment    = this.bufToInt(msg.slice(10,11),1)
-      frag_count  = this.bufToInt(msg.slice(11,12),1)
-      data        = (msg.slice(12)).toString()
+      frag_count  = this.bufToInt(msg.slice(10,11),1)
+      frag_no     = this.bufToInt(msg.slice(11,12),1)
+      data        = (msg.slice(12))#.toString()
       console.log "Receiving " + command
-      @emit "command", sub_port, seq_no, command, data
+      @emit "command", sub_port, seq_no, command, data, frag_count, frag_no
     )
     inbound_socket.bind( outbound_socket.address().port )
     inbound_socket.address().port

@@ -1,6 +1,7 @@
 EventEmitter  = require('events').EventEmitter
 pktr          = require('./packeteer').packeteer
 hwdbparser    = require('./hwdbparser').hwdbparser
+Defragger     = require('./defragger').defragger
 
 class JSRPC extends EventEmitter
 
@@ -28,7 +29,7 @@ class JSRPC extends EventEmitter
     CONNECT_SENT      : 3,
     QUERY_SENT        : 4,
     AWAITING_RESPONSE : 5,
-    TIMEDOUT          : 6,  # TODO
+    TIMEDOUT          : 6,
     DISCONNECT_SENT   : 7,  # TODO - test
     FRAGMENT_SENT     : 8,  # TODO
     FACK_RECEIVED     : 9,  # TODO
@@ -48,13 +49,65 @@ class JSRPC extends EventEmitter
   idleOutboundTimer = 0
   idleInboundTimer = 0
 
+  defrag = 0
+
   pingInterval = 15 # seconds
 
   setupCommandListener: ->
-    pktr.on("command", (sub_port, seq_no, command, data) =>
+    pktr.on("command", (sub_port, seq_no, command, data, frag_count, frag_no) =>
 
+      if frag_count is frag_no and frag_count != 1
+        defrag.push frag_count, (data.toString()).slice(4)
+        pktr.emit "command", sub_port, seq_no, command, defrag.getData(), 1, 1
+        defrag = 0
+      if command is not Command.FRAGMENT
+        data = data.toString()
+
+      console.log "Command:", command, frag_count, frag_no
       if command is Command.FRAGMENT
-        #Reassemble
+        if sub_port is outboundSubPort
+          if seq_no < outboundSeqNo
+            console.log "Received old/repeat sequence number from responder during fragment"
+          else if seq_no > (outboundSeqNo+1)
+            console.log "Received sequence number too far ahead from responder during fragment"
+          else
+            console.log "Fragment sequence number is correct"
+            total_length = pktr.bufToInt new Buffer(data.slice(0,2)), 2
+            fragment_length = pktr.bufToInt new Buffer(data.slice(2,4)), 2
+            console.log frag_count + "/" + frag_no
+            if state is RPCState.AWAITING_RESPONSE
+              if seq_no is outboundSeqNo and frag_count is 1
+                defrag = new Defragger(frag_no, total_length)
+                defrag.push frag_count, (data.toString()).slice(4)
+                @setState(RPCState.FACK_SENT, 1)
+                pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
+            else if state is RPCState.FACK_SENT
+              if seq_no is outboundSeqNo
+                defrag.push frag_count, (data.toString()).slice(4)
+                @setState(RPCState.FACK_SENT, 1)
+                pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
+        else if sub_port is inboundSubPort
+          if seq_no < inboundSeqNo
+            console.log "Received old/repeat sequence number from responder during fragment"
+          else if seq_no > (inboundSeqNo+1)
+            console.log "Received sequence number too far ahead from responder during fragment"
+          else
+            console.log "Fragment sequence number is correct"
+            fragment_length = data.slice(0,1)
+            total_length = data.slice(1,2)
+            console.log "RY"
+            if state is RPCState.RESPONSE_SENT
+              if seq_no is (inboundSeqNo+1) and frag_no is 1
+                @setState(RPCState.IDLE, 0)
+            if state is RPCState.IDLE
+              defrag = new Defragger(frag_count, total_length)
+              @setState(RPCState.FACK_SENT, 0)
+              pktr.sendCommand(Command.FACK, "", sub_port, ++inboundSeqNo)
+            else if state == RPCState.FACK_SENT
+              if seq_no is inboundSeqNo and defrag
+                result = defrag.push frag_no, data.slice(4)
+                if result is 2
+                  pktr.sendCommand(Command.FACK, "", sub_port, inboundSeqNo)
       else if command is Command.PING
         console.log "PING!"
         pktr.sendCommand(Command.PACK, "", sub_port, seq_no)
