@@ -86,48 +86,18 @@ cols    1     2      3      4      5      6      7      8      9      10
 px      68    160    252    344    436    528    620    712    804    896    */
 
 body {
-  width: 100%;
-  background: rgb(222,234,237);/* url('/transparent_clouds.png');*/
-  background: url('/texture.png');
-  background: rgb(217,217,213);
   background: url('/linen-bg.jpg');
-  color: #444444;/*rgb(60,60,60);*/
   color: white;
   -webkit-text-size-adjust: 100%; /* Stops Mobile Safari from auto-adjusting font-sizes */
 }
 
-#header {
-  background: rgb(30,42,75);
+#title_bar {
   width: 100%;
-  height: 20px;
-  margin: 0;
-  background: rgb(0,139,177);
-  background: rgb(0,79,100);
-  padding: 5px 0px 7px 0px;
-  text-align: center;
-  color: rgb(255,127,14);
-  font-size: 18px;
-  font-family: Helvetica;
-}
-
-#title {
-  width: 966px;
-  width: 100%;
-  background: rgb(188,227,237);
-  background: rgb(0,79,100);
-  background: rgb(0,139,177);
-  background: rgb(37,77,149);
-  background: url('/blue_bg.png');
-  background: url('/texture.png');
   background: url('/linen-header.jpg');
-  margin: 0 auto;
-  margin-top: 30px;
-  margin-bottom: 0px;
-  color: white;
+  margin: 30px auto 0 auto;
   padding: 0px;
+  font-family: 'Tin Doghouse';
   height: 63px;
-  /*border-radius: 0 0 8px 8px;*/
-  /*box-shadow: 5px 5px 5px #ccc;*/
 }
 
 #title_container {
@@ -135,32 +105,49 @@ body {
   margin: 0 auto;
 }
 
-#title_container img {
+#title_image {
   margin: 5px 13px 0px 2px;
-  padding: 0px;
   float: left;
 }
 
-#hw_title { font-family: Helvetica; font-weight: bolder; 
-  font-size: 41px; 
-  margin: 21px 0;
-  color: white;
-font-family: "league-gothic-1","league-gothic-2";
-float: left;
-font-family: 'Tin Doghouse';
-line-height: 140%;
-text-rendering: optimizeLegibility;
--webkit-font-smoothing: antialiased;
-margin: 0 0;
-font-weight: bold;
-font-size: 45px;
+#title_text {
+  line-height: 140%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-size: 45px;
 }
 
 #dashboard {
-  padding: 0px 0px 0px 0px;
   width: 896px;
+  margin: 0 auto;
+}
+
+.dashboard_row {
+  width: 100%;
+  position: relative;
+  min-height: 60px;
+}
+.dashboard_side {
+  width: 316px;
+  min-height: 60px;
+  overflow: auto;
+  background: url('/linen-side.jpg');
+}
+
+.dashboard_side img {
+  float: left;
+  margin: 0 20px;
+}
+
+.hw_sub_title {
+  width: 230px;
+  margin: 0;
+  padding-top: 10px;
+  float: left;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   color: #3F3E39;
-  margin: 0 auto 0 auto;
+  font-size: 10px;
 }
 
 #household_container {
@@ -177,6 +164,9 @@ font-size: 45px;
 .hw_sub_title {
 font-family: 'League Gothic';
 letter-spacing: 0px;
+width: 230px;
+margin: 0;
+float: left;
 /*text-rendering: optimizeLegibility;*/
 -webkit-font-smoothing: antialiased;
   font-weight: bold;
@@ -187,17 +177,6 @@ font-size: 40px;
         font-family: 'Tin Doghouse';
 text-rendering: optimizeLegibility;
 -webkit-font-smoothing: antialiased;
-}
-
-#s {
-  width: 100%;
-  position: relative;
-  height: 155px;
-}
-#side {
-  width: 316px;
-  min-height: 155px;
-  background: url('/linen-side.jpg');
 }
 
 #y { width: 100%;position: absolute; }
