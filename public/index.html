@@ -23,45 +23,79 @@
 </head>
   
   <body lang="en">
-      <div id="title_bar">
-        <div id="title_container">
-          <img id="title_image" src="/homework_logo.png"/>
-          <div id="title_text">Homework</div>
+    <div id="notification_bar">
+      <div id="notification_container">
+        Notifications
+      </div>
+    </div>
+    <div id="title_bar">
+      <div id="title_container">
+        <img id="title_image" src="/homework_logo.png"/>
+        <div id="title_text">Homework</div>
+        <div id="title_links">
+          <div class="title_link">Link</div>
+          <div class="title_link">Link</div>
+          <div class="title_link">Dashboard</div>
+          <div class="title_link">Overview</div>
         </div>
       </div>
+    </div>
     <div id="dashboard">
-      <div class="dashboard_row">
-        <div class="dashboard_side">
+      <div id="sidebar">
+        <div id="sidebar_content">
+          <div class="dashboard_row">
+            <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white;padding-bottom:30px">
+              <div style="float:left"><</div>
+              <div style="float:right">></div>
+              <div id="dashboard_date_month">September</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/home.png"/><div class="hw_sub_title">Household</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/users.png"/><div class="hw_sub_title">Users</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/device.png"/><div class="hw_sub_title">Devices</div>
+            </div>
+          </div>
+          b
         </div>
       </div>
-      <div class="dashboard_row">
-        <div class="dashboard_side">
-          <img src="/home.png"/><p class="hw_sub_title">Household</p>
+      <div id="dashboard_content">
+        <div class="dashboard_date dashboard_right" style="height:56px">
+          Week/day view etc
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
+          <div id="household_text">
+            <sup>10.53</sup>
+            /
+            <sub>50.00GB</sub>
+          </div>
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
         </div>
       </div>
-      <div class="dashboard_row">
-        <div class="dashboard_side">
-          <img src="/users.png"/><p class="hw_sub_title">Users</p>
-        </div>
-      </div>
-      <div class="dashboard_row">
-        <div class="dashboard_side">
-          <img src="/device.png"/><p class="hw_sub_title">Devices</p>
-        </div>
-      </div>
- 
-      <!--
-      <div id="household_container">
-        <div id="household_bar">
-        </div>
-      </div>
-      <sup>40</sup>
-      &frasl;
-      <sub>50 GB</sub>-->
-      <!--      <div style="background-color: rgb(255,127,14);color:white">Week</div> 
-      <div id="pie_chart"></div>
-      <div id="bar_graph1"></div>
-      <script type="text/javascript" src="scripts/dashboard.js"></script>-->
     </div>
   </body>
   
