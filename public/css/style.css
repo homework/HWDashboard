@@ -143,7 +143,7 @@ body {
 
 .title_link {
   float: right;
-  padding: 20px 10px;
+  padding: 20px 35px;
 }
 
 #dashboard {
@@ -252,6 +252,7 @@ body {
   font-size: 20px;
 }
 
+
 /*    Tablet Layout: 768px.
     Gutters: 24px.
     Outer margins: 28px.
@@ -262,10 +263,6 @@ px      68    160    252    344    436    528    620    712    */
 
 @media only screen and (min-width: 768px) and (max-width: 991px) {
   
-  body {
-    width: 712px;
-    padding: 48px 28px 60px;
-  }
 }
 
 
@@ -280,11 +277,6 @@ px      68    160    252    */
 
 @media only screen and (max-width: 767px) {
   
-  body {
-    width: 252px;
-    padding: 48px 34px 60px;
-  }
-  
 }
 
 
@@ -298,10 +290,5 @@ cols    1     2      3      4      5
 px      68    160    252    344    436    */
 
 @media only screen and (min-width: 480px) and (max-width: 767px) {
-  
-  body {
-    width: 436px;
-    padding: 36px 22px 48px;
-  }
   
 }
