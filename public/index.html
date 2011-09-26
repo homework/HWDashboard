@@ -1,27 +1,98 @@
+<!doctype html>
 <html>
+
   <head>
-    <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
+    <meta charset="utf-8"/>
+    <title></title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" media="all" href="css/style.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- Adding "maximum-scale=1" fixes the Mobile Safari auto-zoom bug: http://filamentgroup.com/examples/iosScaleBug/ -->
 
-      var events  = io.connect('http://192.168.1.1/events'),
-          stats   = io.connect('http://192.168.1.1/stats')
+    <!-- d3 graphs -->
+    <script type="text/javascript" src="scripts/d3/d3.js"></script>
+    <script type="text/javascript" src="scripts/d3/d3.layout.js"></script>
 
-      events.on('message', function(data) {
-        $('#events').append($('<p>').append(data));
-      });
-
-      stats.on('network_stream', function(data) {
-        $('#stats').append($('<p>').append("Bytes: " + data[0].bytes + ", Packets: " + data[0].packets));
-      });
-
-
-    </script>
-  </head>
-  <body>
-    <p>Events</p>
-    <div id="events" style="height:200px"></div>
-    <p>Stats</p>
-    <div id="stats" style="height:200px"></div>
+    <!-- Development ONLY -->
+    <script type="text/javascript" src="scripts/live.js"></script>
+    <!--  <script type="text/javascript" src="scripts/less-grid.js"></script>-->
+<link href="http://kernest.com/fonts/league-gothic.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://kernest.com/fonts/tin-doghouse.css" media="screen" rel="stylesheet" type="text/css" />
+</head>
+  
+  <body lang="en">
+    <div id="notification_bar">
+      <div id="notification_container">
+      </div>
+    </div>
+    <div id="title_bar">
+      <div id="title_container">
+        <img id="title_image" src="/homework_logo.png"/>
+        <div id="title_text">Homework</div>
+        <div id="title_links">
+          <div class="title_link">Days</div>
+          <div class="title_link">Weeks</div>
+          <div class="title_link">Months</div>
+        </div>
+      </div>
+    </div>
+    <div id="dashboard">
+      <div id="sidebar">
+        <div id="sidebar_content">
+          <div class="dashboard_row">
+            <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white;padding-bottom:30px">
+              <div style="float:left"><</div>
+              <div style="float:right">></div>
+              <div id="dashboard_date_month">September</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/home.png"/><div class="hw_sub_title">Household</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/users.png"/><div class="hw_sub_title">Users</div>
+            </div>
+          </div>
+          <div class="dashboard_row">
+            <div class="dashboard_header dashboard_left">
+              <img src="/device.png"/><div class="hw_sub_title">Devices</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="dashboard_content">
+        <div class="dashboard_date dashboard_right" style="height:56px">
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
+          <div id="household_text">
+            <sup>10.53</sup>
+            /
+            <sub>50.00GB</sub>
+          </div>
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
+        </div>
+        <div class="dashboard_header dashboard_right">
+          <div id="household_container">
+            <div id="household_bar">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
+  
 </html>
