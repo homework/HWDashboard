@@ -196,7 +196,7 @@ body {
 }
 
 .dashboard_header {
-  min-height: 70px;
+  min-height: 57px;
   overflow: auto;
   color: #3F3E39;
 }
@@ -210,10 +210,25 @@ body {
   width: 296px;
 }
 
+.dashboard_user_left {
+  float: right;
+  border: 1px solid green;
+}
+
 .dashboard_right {
   height: 100%;
   text-align: left;
   color: #3F3E39;
+}
+
+.dashboard_user {
+  min-height: 40px;
+  overflow: auto; 
+}
+
+.dashboard_device {
+  min-height: 60px;
+  overflow: auto; 
 }
 
 .hw_sub_title {
@@ -229,7 +244,7 @@ body {
   font-size: 40px;
 }
 
-#household_container {
+.household_bar_border {
   width: 420px;
   border: 4px solid rgb(228,63,23);
   border: 3px solid rgb(255,127,14);
@@ -240,18 +255,40 @@ body {
   padding: 3px;
 }
 
-#household_bar {
+.household_bar {
   width: 0%;
   height: 100%;
   background: rgb(255,127,14);
 }
 
-#household_text {
+.household_text {
   float: left;
   padding: 3px 2px;
   font-size: 20px;
 }
 
+.user_bar_border {
+  width: 420px;
+  border: 4px solid rgb(228,63,23);
+  border: 3px solid rgb(255,127,14);
+  border: 3px solid #3F3E39;
+  height: 20px;
+  float:left;
+  margin: 5px 7px 5px 5px;
+  padding: 3px;
+}
+
+.user_bar {
+  width: 0%;
+  height: 100%;
+  background: rgb(255,127,14);
+}
+
+.user_text {
+  float: left;
+  padding: 3px 2px;
+  font-size: 20px;
+}
 
 /*    Tablet Layout: 768px.
     Gutters: 24px.
