@@ -1,30 +1,3 @@
-Implementation Plan
--------------------
-
-Homebase represents a simple mockup of the base architecture in discussion. It will just implement users 
-and the ability to selectively push requests up and downstream to users. Its purpose is to ensure any 
-interaction with web users can be achieved with ease through a decoupled interface that does not 
-discriminate its upstream source.
-
-#### Goal
-HWDB-RPC <--> Homebase <--> Node <--> Client
-
-#### Step 1
-Create a suitable Node.JS, Socket.IO and Express.JS for pushing downstream through REST
-TestHarness <-REST-> Node <--> Client
-
-#### Step 2
-Create JScript RPC interface to grab data from HWDB and push it downstream to clients (through calls in Node)
-HWDB-RPC <--> JScriptRPC <--> Node <--> Client
-
-#### Step 3
-Create a Homebase architecture for notifications to be pushed on a user basis and enable interaction between users
-Homebase <-REST-> Node <--> Client
-
-#### Step 4
-Have Homebase subscribe to HWDB and selectively push data downstream
-HWDB-RPC <--> JScriptRPC <--> Homebase <--> Node <--> Client
-
 Installation
 ------------
 
@@ -32,27 +5,22 @@ Install Node.JS, npm, nodeunit(for nodeunit command line)
 
 then
 
-    npm install express
-    npm install socket.io
-    npm install nodeunit
-    npm install coffee-script
-    npm install uglify-js
+    npm install express log now coffee-script uglify-js
 
 #### Starting the server
 
-    node lib/hwdbservice.min.js
+    node lib/dashboard.js
 
-Development
+Development 
 -----------
 
 To autogenerate CoffeeScript as you write it, call
 
     cake watch
 
-Build tests with
+for server development and
 
-    cake build:test
+    coffee -o public/scripts public_src
 
-and run them with
+for client development
 
-    nodeunit test/js/hwdbservice_test.js

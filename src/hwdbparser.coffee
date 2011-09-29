@@ -14,10 +14,11 @@ class HWDBParser
       columns = ( (column.split(':'))[1] for column in (data_lines[1].split('<|>')).slice(0,-1) )
       rows = []
 
-      for row in data_lines.slice 2, 2+row_count
-        fields = row.split('<|>').slice(0,-1)
-        fields[0] = ((parseInt(fields[0].slice(1,-1),16)).toString()).slice(0,11)
-        rows.push(fields)
+      for row in data_lines.slice 2
+        if row? and row isnt ""
+          fields = row.split('<|>').slice(0,-1)
+          fields[0] = ((parseInt(fields[0].slice(1,-1),16)).toString()).slice(0,11)
+          rows.push(fields)
 
       results = []
 

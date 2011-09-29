@@ -5,13 +5,12 @@ uglify = require './node_modules/uglify-js'
 
 appFiles = [
 #    'src/server/blank.coffee',
-    'src/server/logger.coffee',
-    'src/server/hwdbparser.coffee',
-    'src/server/defragger.coffee',
-    'src/server/packeteer.coffee',
-    'src/server/jsrpc.coffee',
-    'src/server/hwdbservice.coffee',
-    'src/client/dashboard.coffee'
+    'src/logger.coffee',
+    'src/hwdbparser.coffee',
+    'src/defragger.coffee',
+    'src/packeteer.coffee',
+    'src/jsrpc.coffee',
+    'src/hwdbservice.coffee',
 ]
 
 task 'coffeeFiles', 'how much coffee you got?!', ->

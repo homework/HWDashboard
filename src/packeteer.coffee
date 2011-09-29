@@ -1,6 +1,6 @@
-EventEmitter = require('events').EventEmitter
+EventEmitter      = require('events').EventEmitter
 HWDashboardLogger = require('./logger').logger
-log               = new HWDashboardLogger "packeteer", 5
+log               = new HWDashboardLogger("packeteer", 5)
 
 class Packeteer extends EventEmitter
 

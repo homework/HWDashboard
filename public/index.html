@@ -43,7 +43,7 @@
       <div id="sidebar">
         <div id="sidebar_content">
           <div class="dashboard_row">
-            <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white;padding-bottom:30px">
+            <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white">
               <div style="float:left"><</div>
               <div style="float:right">></div>
               <div id="dashboard_date_month">September</div>
@@ -67,21 +67,24 @@
         </div>
       </div>
       <div id="dashboard_content">
-        <div class="dashboard_date dashboard_right" style="height:56px">
+        <div class="dashboard_date dashboard_right" style="height:26px">
         </div>
         <div id="household_container_right" class="dashboard_header dashboard_right">
           <div class="household_bar_border">                     
             <div class="household_bar">                          
             </div>                                            
           </div>
-          <div class="household_text">                           
-            <sup>10.53</sup>                                  
+          <div id="household_bar_text" class="bar_text">                           
+            <sup id="household_usage"></sup>                                  
             /
-            <sub>50.00GB</sub>                                
+            <sub id="household_allowance"></sub>                                
           </div>
         </div>
         <div id="user_container_right">
-          <div class="dashboard_header dashboard_right"></div>
+          <div class="dashboard_header dashboard_right" style="padding-top:15px;min-height: 37px">Click a user to see device usage</div>
+        </div>
+        <div id="device_container_right">
+          <div class="dashboard_header dashboard_right" style="padding-top:15px;min-height:37px"></div>
         </div>
     </div>
   </body>

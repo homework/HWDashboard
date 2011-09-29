@@ -11,5 +11,5 @@ class HWDashboardLogger
     )
     
     return log = new Log @loglevel, fs.createWriteStream(__dirname + '/logs/' + @classlog + '.log')
-  
+
 exports.logger = HWDashboardLogger
