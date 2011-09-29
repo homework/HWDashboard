@@ -58,7 +58,7 @@ io_server.now.serverOutput = (data) ->
   io_server.now.bandwidthUpdate(state)
 
 stats_jsrpc.connect()
-stats_jsrpc.query("SQL:subscribe SysLast 192.168.1.78 ")
+stats_jsrpc.query("SQL:subscribe BWUsageLast 192.168.1.78 ")
 
 stats_jsrpc.on('message', (data) ->
   console.log data

@@ -9,7 +9,7 @@ class Packeteer extends EventEmitter
   outbound_socket = udp.createSocket "udp4"
 
   connectAddress  = '192.168.1.1'
-  connectPort     = 987
+  connectPort     = 997
   lport = 0
 
   intToByteArray: (number, width) ->
