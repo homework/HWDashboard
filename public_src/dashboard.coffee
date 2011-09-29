@@ -1,33 +1,89 @@
-updateBar = (subject_id, bytes) ->
+toGigabytes = (bytes) ->
+  return (Math.round(bytes/1073741824*100000)/100000).toFixed(2)
 
-  update_subject = subject_id.split('-')
+updateHousehold = (hh) ->
 
-  if $('#' + subject_id + '_container_left .' + update_subject[0] + '_bar').length is 0
-    console.log update_subject
+  hh_usage = toGigabytes(hh.usage)
+  hh_allowance = toGigabytes(hh.allowance)
 
-    $('#' + update_subject[0] + '_container_left').append('
-      <div id="' + subject_id + '_container_left" class="dashboard_user dashboard_user_left">' + update_subject[1] + '</div>
+  percent_usage = (hh_usage / hh_allowance) * 100
+
+  $('#household_container_right .household_bar').width(percent_usage + "%")
+  $('#household_usage').text(hh_usage)
+  $('#household_allowance').text(hh_allowance + "GB")
+
+updateUser = (user) ->
+
+  user_usage = toGigabytes(user.usage)
+  user_allowance = toGigabytes(user.allowance)
+
+  percent_usage = (user.usage / user.allowance) * 100
+
+  if $('#user-' + user.id + '_container_left .user_bar').length is 0
+
+    $('#user_container_left').append('
+      <div id="' + user.id + '_container_left" class="dashboard_user dashboard_left">
+        <div class="dashboard_user_text">' + user.name + '</div>
+      </div>
     ')
 
-    $('#' + update_subject[0] + '_container_right').append('
-      <div id="' + subject_id + '_container_right" class="dashboard_user dashboard_right">
-        <div class="' + update_subject[0] + '_bar_border">                     
-          <div class="' + update_subject[0] + '_bar">                          
+    $('#user_container_right').append('
+      <div id="user-' + user.id + '_container_right" class="dashboard_user dashboard_right">
+        <div class="user_bar_border">                     
+          <div class="user_bar">                          
           </div>                                            
         </div>
-        <div class="household_text">                           
-          <sup>10.53</sup>                                  
+        <div class="bar_text">                           
+          <sup id="user-' + user.id + '_usage"></sup>                                  
           /
-          <sub>50.00GB</sub>                                
+          <sub id="user-' + user.id + '_allowance"></sub>                                
         </div>
       </div>
     ')
-  $('#' + subject_id + '_container_right .' + update_subject[0] + '_bar').width(bytes + "%")
 
-now.statsUpdate = (bytes) ->
-  console.log bytes
-  if 1#REST in window
-    updateBar("user-" + bytes, bytes)
+  $('#user-' + user.id + '_container_right .user_bar').width(percent_usage + '%')
+  $('#user-' + user.id + '_usage').text(user_usage)
+  $('#user-' + user.id + '_allowance').text(user_allowance + 'GB')
+
+updateDevice = (device) ->
+
+  device_usage = toGigabytes(device.usage)
+  device_allowance = toGigabytes(device.allowance)
+
+  percent_usage = (device.usage / device.allowance) * 100
+  console.log device.id
+
+  if $('#device-' + device.id + '_container_left .device_bar').length is 0
+
+    $('#device_container_left').append('
+      <div id="' + device.id + '_container_left" class="dashboard_device dashboard_left">
+        <div class="dashboard_device_text">' + device.name + '</div>
+      </div>
+    ')
+
+    $('#device_container_right').append('
+      <div id="device-' + device.id + '_container_right" class="dashboard_device dashboard_right">
+        <div class="device_bar_border">                     
+          <div class="device_bar">                          
+          </div>                                            
+        </div>
+        <div class="bar_text">                           
+          <sup id="device-' + device.id + '_usage"></sup>                                  
+          /
+          <sub id="device-' + device.id + '_allowance"></sub>                                
+        </div>
+      </div>
+    ')
+
+  $('#device-' + device.id + '_container_right .device_bar').width(percent_usage + '%')
+  $('#device-' + device.id + '_usage').text(device_usage)
+  $('#device-' + device.id + '_allowance').text(device_allowance + 'GB')
+
+now.bandwidthUpdate = (state) ->
+
+  updateHousehold(state.household)
+  updateUser(user) for user in state.users
+  updateDevice(device) for device in state.devices
 
 now.ready ->
   now.serverOutput "Client connected through Now.JS"

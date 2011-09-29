@@ -1,9 +1,42 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
-#if d flag set then LOG_LEVEL = 7 # Log.DEBUG
+state =
+    household:
+                usage: 101010100,
+                allowance: 10000000000
 
-log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL 
+    users:      [
+                  {
+                    id : 5,
+                    name: "Mum Smith",
+                    usage: 3012312000,
+                    allowance: 50000000000
+                  },
+                  {
+                    id : 7,
+                    name: "Dad Smith",
+                    usage: 4012312000,
+                    allowance: 100000000000
+                  }
+                ],
+
+    devices:    [
+                  {
+                    id: 1,
+                    name: "mac",
+                    usage: 4012312000,
+                    allowance: 10000000000
+                  },
+                  {
+                    id: 4,
+                    name: "nbk",
+                    usage: 4012312000,
+                    allowance: 112000000000
+                  }
+                ]
+
+log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 
 log.notice "Starting HWDashboard"
 
@@ -21,10 +54,7 @@ rest_server.configure( ->
 
 io_server.now.serverOutput = (data) ->
   console.log(data)
-  io_server.now.statsUpdate(50)
-  setTimeout( ->
-    io_server.now.statsUpdate(20)
-  , 3000)
+  io_server.now.bandwidthUpdate(state)
 
 """
 stats_jsrpc.connect()
