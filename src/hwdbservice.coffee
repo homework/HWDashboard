@@ -1,6 +1,11 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
+dd = require('./dummydata').dummy_data
+state_builder = require('./statebuilder').statebuilder
+
+console.log state_builder.dateQuery(dd[0])
+"""
 state =
     household:
                 usage: 101010100,
@@ -57,11 +62,11 @@ io_server.now.serverOutput = (data) ->
   console.log(data)
 
 stats_jsrpc.connect()
-stats_jsrpc.query("SQL:subscribe BWUsageLast 127.0.0.1 ")
+stats_jsrpc.query("SQL:select * from BWUsage ")
 
 stats_jsrpc.on('message', (data) ->
   console.log data
-  io_server.now.bandwidthUpdate(data)
+#  io_server.now.bandwidthUpdate(data)
 )
 
 stats_jsrpc.on('timedout', ->
@@ -87,3 +92,5 @@ if !module.parent
     stats_jsrpc.on 'disconnected', ->
       log.notice "HWDashboard killed by SIGINT, exited gracefully"
       process.exit(0)
+    process.exit(0)
+"""
