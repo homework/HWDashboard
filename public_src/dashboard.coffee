@@ -80,10 +80,11 @@ updateDevice = (device) ->
   $('#device-' + device.id + '_allowance').text(device_allowance + 'GB')
 
 now.bandwidthUpdate = (state) ->
-
+  console.log state
+"""
   updateHousehold(state.household)
   updateUser(user) for user in state.users
   updateDevice(device) for device in state.devices
-
+"""
 now.ready ->
   now.serverOutput "Client connected through Now.JS"

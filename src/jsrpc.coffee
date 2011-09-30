@@ -68,7 +68,8 @@ class JSRPC extends EventEmitter
       if command isnt Command.FRAGMENT
         data = data.toString()
 
-      log.debug "Command: " + command + ", " + frag_count + ", " + frag_no
+      log.debug inboundSubPort + " " + outboundSubPort
+      log.debug "Command: " + command + ", " + frag_count + ", " + frag_no + " SP: " + sub_port
 
       if command is Command.FRAGMENT
 
@@ -168,7 +169,7 @@ class JSRPC extends EventEmitter
                 @setState(RPCState.IDLE, 1)
                 @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
                 pktr.sendCommand(Command.RACK, "", outboundSubPort, outboundSeqNo)
-                log.debug "RESPONSE received:", data.slice(4)
+                log.debug "RESPONSE received: " + data.slice(4)
                 @setState(RPCState.IDLE, 1)
 
             when Command.SACK
@@ -261,7 +262,7 @@ class JSRPC extends EventEmitter
       @clearIdleTimer(direction)
 
   setIdleTimer: (direction, ticks=3) ->
-
+    """
     if ticks is 0
 
       @setState(RPCState.TIMEDOUT)
@@ -272,7 +273,7 @@ class JSRPC extends EventEmitter
 
       clearTimeout(idleInboundTimer)
 
-      log.debug "Setting new PING timer for inbound"
+      log.debug "Setting new PING timer for inbound with" + ticks + "ticks"
 
       idleInboundTimer = setTimeout( =>
         log.debug "Timer executed, sending PING on inbound and setting with " + ticks-1 + " ticks"
@@ -284,7 +285,7 @@ class JSRPC extends EventEmitter
 
       clearTimeout(idleOutboundTimer)
 
-      log.debug "Setting new PING timer for outbound"
+      log.debug "Setting new PING timer for outbound" + ticks + "ticks"
 
       idleOutboundTimer = setTimeout( =>
         log.debug "Timer executed, sending PING on outbound and setting timer with " + ticks-1 + " ticks"
@@ -292,8 +293,10 @@ class JSRPC extends EventEmitter
         @setIdleTimer(direction, ticks-1)
       , pingInterval * 1000)
 
+    """
   clearIdleTimer: (direction) ->
 
+    """"
     if direction is 0
 
       log.debug "Clearing inbound timer"
@@ -307,7 +310,7 @@ class JSRPC extends EventEmitter
 
       clearTimeout(idleOutboundTimer)
       idleOutboundTimer = 0
-
+    """
   connect: (address, port) ->
 
     @setupCommandListener()
@@ -320,6 +323,10 @@ class JSRPC extends EventEmitter
     pktr.sendCommand(Command.CONNECT, "HWDB\0", outboundSubPort, outboundSeqNo)
 
     lport = pktr.listen()
+
+    setTimeout( ->
+      pktr.sendCommand(Command.CONNECT, "HWDB\0", outboundSubPort, outboundSeqNo)
+    , 2000)
 
   query: (query) ->
 

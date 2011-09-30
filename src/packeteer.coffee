@@ -8,8 +8,8 @@ class Packeteer extends EventEmitter
   inbound_socket  = udp.createSocket "udp4"
   outbound_socket = udp.createSocket "udp4"
 
-  connectAddress  = '192.168.1.1'
-  connectPort     = 997
+  connectAddress  = '127.0.0.1'
+  connectPort     = 987
   lport = 0
 
   intToByteArray: (number, width) ->
@@ -40,6 +40,10 @@ class Packeteer extends EventEmitter
     byteArray = byteArray.concat( this.intToByteArray(command, 2) )
     byteArray.push frag_count
     byteArray.push frag_no
+
+    if command == 5 # HACK
+      byteArray.push String.fromCharCode(0) + String.fromCharCode(data.length)
+      byteArray.push String.fromCharCode(0) + String.fromCharCode(data.length)
 
     for i in [0...data.length]
       byteArray.push data.charCodeAt(i)

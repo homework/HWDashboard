@@ -72,21 +72,9 @@
     return $('#device-' + device.id + '_allowance').text(device_allowance + 'GB');
   };
   now.bandwidthUpdate = function(state) {
-    var device, user, _i, _j, _len, _len2, _ref, _ref2, _results;
-    updateHousehold(state.household);
-    _ref = state.users;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      user = _ref[_i];
-      updateUser(user);
-    }
-    _ref2 = state.devices;
-    _results = [];
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      device = _ref2[_j];
-      _results.push(updateDevice(device));
-    }
-    return _results;
+    return console.log(state);
   };
+  "updateHousehold(state.household)\nupdateUser(user) for user in state.users\nupdateDevice(device) for device in state.devices";
   now.ready(function() {
     return now.serverOutput("Client connected through Now.JS");
   });
