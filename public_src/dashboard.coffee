@@ -88,4 +88,4 @@ now.updateView = (state) ->
 
 now.ready ->
   now.serverOutput "Client connected through Now.JS"
-  now.queryMonths 2011, 10, 2011, 11
+  #now.queryMonths 2011, 10, 2011, 11

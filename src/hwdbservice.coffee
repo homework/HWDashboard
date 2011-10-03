@@ -22,11 +22,8 @@ rest_server.configure( ->
 io_server.now.serverOutput = (data) ->
   console.log(data)
 
-"""
 stream_jsrpc.connect()
-stream_jsrpc.query("SQL:select * from BWUsage ")
-query_jsrpc.connect()
-"""
+stream_jsrpc.query("SQL:subscribe BWUsageLast 127.0.0.1 ")
 
 stream_jsrpc.on('timedout', ->
   log.error "JSRPC timed out, process exiting"
@@ -40,15 +37,18 @@ state_builder = require('./statebuilder').statebuilder
 todays_state =
   household:
               usage:        0
-              allowance:    900000000000
+              allowance:    900000000
+  devices: {}
 
-"""
 # Update todays state from stream
 stream_jsrpc.on('message', (data) ->
-  todays_state = state_builder.parseResult(data, todays_state)
-  io_server.now.updateView todays_state
+  if data is "Success"
+    console.log "Connected"
+  else
+    todays_state = state_builder.parseResult(data, todays_state)
+    console.log todays_state
+    io_server.now.updateView todays_state
 )
-"""
 
 io_server.now.queryMonths = (startYear, startMonth, endYear, endMonth) ->
 

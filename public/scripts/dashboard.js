@@ -82,7 +82,6 @@
     return _results;
   };
   now.ready(function() {
-    now.serverOutput("Client connected through Now.JS");
-    return now.queryMonths(2011, 10, 2011, 11);
+    return now.serverOutput("Client connected through Now.JS");
   });
 }).call(this);

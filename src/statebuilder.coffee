@@ -17,16 +17,17 @@ class StateBuilder
     new_state.devices[device].usage = 0 for device of new_state.devices
 
     for row in result
+      console.log row
 
       #TODO check if within date range
-      device = row.macaddr
+      device = row.ipaddr
       if new_state.devices[device]?
         new_state.devices[device].usage += parseInt(row.bytes)
       else
         new_state.devices[device] =
-          name:       row.name
+          #name:       row.name
           usage:      parseInt(row.bytes)
-          allowance:  parseInt(row.allowance)
+          allowance:  500000,#parseInt(row.allowance)
       new_state.household.usage += parseInt(row.bytes)
 
     return new_state
