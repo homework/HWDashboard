@@ -41,41 +41,48 @@
     $('#user-' + user.id + '_usage').text(user_usage);
     return $('#user-' + user.id + '_allowance').text(user_allowance + 'GB');
   };
-  updateDevice = function(device) {
+  updateDevice = function(mac, device) {
     var device_allowance, device_usage, percent_usage;
     device_usage = toGigabytes(device.usage);
     device_allowance = toGigabytes(device.allowance);
     percent_usage = (device.usage / device.allowance) * 100;
-    console.log(device.id);
-    if ($('#device-' + device.id + '_container_left .device_bar').length === 0) {
+    if ($('#device-' + device.name + '_container_left .device_bar').length === 0) {
       $('#device_container_left').append('\
-      <div id="' + device.id + '_container_left" class="dashboard_device dashboard_left">\
+      <div id="' + device.name + '_container_left" class="dashboard_device dashboard_left">\
         <div class="dashboard_device_text">' + device.name + '</div>\
       </div>\
     ');
       $('#device_container_right').append('\
-      <div id="device-' + device.id + '_container_right" class="dashboard_device dashboard_right">\
+      <div id="device-' + device.name + '_container_right" class="dashboard_device dashboard_right">\
         <div class="device_bar_border">                     \
           <div class="device_bar">                          \
           </div>                                            \
         </div>\
         <div class="bar_text">                           \
-          <sup id="device-' + device.id + '_usage"></sup>                                  \
+          <sup id="device-' + device.name + '_usage"></sup>                                  \
           /\
-          <sub id="device-' + device.id + '_allowance"></sub>                                \
+          <sub id="device-' + device.name + '_allowance"></sub>                                \
         </div>\
       </div>\
     ');
     }
-    $('#device-' + device.id + '_container_right .device_bar').width(percent_usage + '%');
-    $('#device-' + device.id + '_usage').text(device_usage);
-    return $('#device-' + device.id + '_allowance').text(device_allowance + 'GB');
+    $('#device-' + device.name + '_container_right .device_bar').width(percent_usage + '%');
+    $('#device-' + device.name + '_usage').text(device_usage);
+    return $('#device-' + device.name + '_allowance').text(device_allowance + 'GB');
   };
-  now.bandwidthUpdate = function(state) {
-    return console.log(state);
+  now.updateView = function(state) {
+    var device, mac, _ref, _results;
+    updateHousehold(state.household);
+    _ref = state.devices;
+    _results = [];
+    for (mac in _ref) {
+      device = _ref[mac];
+      _results.push(updateDevice(mac, device));
+    }
+    return _results;
   };
-  "updateHousehold(state.household)\nupdateUser(user) for user in state.users\nupdateDevice(device) for device in state.devices";
   now.ready(function() {
-    return now.serverOutput("Client connected through Now.JS");
+    now.serverOutput("Client connected through Now.JS");
+    return now.queryMonths(2011, 10, 2011, 11);
   });
 }).call(this);

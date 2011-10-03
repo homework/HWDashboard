@@ -1,54 +1,15 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
-dd = require('./dummydata').dummy_data
-state_builder = require('./statebuilder').statebuilder
-
-console.log state_builder.dateQuery(dd[0])
-"""
-state =
-    household:
-                usage: 101010100,
-                allowance: 10000000000
-
-    users:      [
-                  {
-                    id : 5,
-                    name: "Mum Smith",
-                    usage: 3012312000,
-                    allowance: 50000000000
-                  },
-                  {
-                    id : 7,
-                    name: "Dad Smith",
-                    usage: 4012312000,
-                    allowance: 100000000000
-                  }
-                ],
-
-    devices:    [
-                  {
-                    id: 1,
-                    name: "mac",
-                    usage: 4012312000,
-                    allowance: 10000000000
-                  },
-                  {
-                    id: 4,
-                    name: "nbk",
-                    usage: 4012312000,
-                    allowance: 112000000000
-                  }
-                ]
-
 HWDashboardLogger = require('./logger').logger
 log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 
 log.notice "Starting HWDashboard"
 
-stats_jsrpc = require('./jsrpc').jsrpc
-now_app     = require('now')
-express     = require('express')
+stream_jsrpc  = require('./jsrpc').jsrpc
+query_jsrpc   = require('./jsrpc').jsrpc
+now_app       = require('now')
+express       = require('express')
 
 rest_server = express.createServer()
 io_server   = now_app.initialize(rest_server)
@@ -61,25 +22,55 @@ rest_server.configure( ->
 io_server.now.serverOutput = (data) ->
   console.log(data)
 
-stats_jsrpc.connect()
-stats_jsrpc.query("SQL:select * from BWUsage ")
+"""
+stream_jsrpc.connect()
+stream_jsrpc.query("SQL:select * from BWUsage ")
+query_jsrpc.connect()
+"""
 
-stats_jsrpc.on('message', (data) ->
-  console.log data
-#  io_server.now.bandwidthUpdate(data)
-)
-
-stats_jsrpc.on('timedout', ->
+stream_jsrpc.on('timedout', ->
   log.error "JSRPC timed out, process exiting"
   process.exit(1)
 )
-
 log.info "JSRPC setup executed"
 
+dd = require('./dummydata').dummy_data
+state_builder = require('./statebuilder').statebuilder
+
+todays_state =
+  household:
+              usage:        0
+              allowance:    900000000000
+
+"""
+# Update todays state from stream
+stream_jsrpc.on('message', (data) ->
+  todays_state = state_builder.parseResult(data, todays_state)
+  io_server.now.updateView todays_state
+)
+"""
+
+io_server.now.queryMonths = (startYear, startMonth, endYear, endMonth) ->
+
+  #TO BE FIXED, TIMEZONE INVALID DUE TO DST
+  month_start = new Date(startYear, startMonth+1, 1)
+  month_end   = new Date(endYear, endMonth+1, 1)
+
+  ns = state_builder.parseResult(dd[0], 0, month_start, month_end)
+  io_server.now.updateView ns
+  
+  """
+  query_jsrpc.query("SQL:select * from BWUsage range (" + month_start + ", " + month_end + ")") 
+
+  query_jsrpc.on('message', (data) ->
+    io_server.now.updateView state_builder.parseResult(data, 0, month_start, month_end)
+  )
+  """
+
 rest_server.get('/*', (req, res) ->
-    res.sendfile('../public/index.html', (err) ->
-      console.log err
-    )
+  res.sendfile('../public/index.html', (err) ->
+    console.log err
+  )
 )
 
 if !module.parent
@@ -88,9 +79,10 @@ if !module.parent
   )
   log.notice "Dashboard server listening on port " + DASHBOARD_PORT
   process.on 'SIGINT', ->
+    """
     stats_jsrpc.disconnect()
     stats_jsrpc.on 'disconnected', ->
       log.notice "HWDashboard killed by SIGINT, exited gracefully"
       process.exit(0)
+    """
     process.exit(0)
-"""

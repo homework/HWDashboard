@@ -45,46 +45,47 @@ updateUser = (user) ->
   $('#user-' + user.id + '_usage').text(user_usage)
   $('#user-' + user.id + '_allowance').text(user_allowance + 'GB')
 
-updateDevice = (device) ->
+updateDevice = (mac, device) ->
 
   device_usage = toGigabytes(device.usage)
   device_allowance = toGigabytes(device.allowance)
 
   percent_usage = (device.usage / device.allowance) * 100
-  console.log device.id
 
-  if $('#device-' + device.id + '_container_left .device_bar').length is 0
+  if $('#device-' + device.name + '_container_left .device_bar').length is 0
 
     $('#device_container_left').append('
-      <div id="' + device.id + '_container_left" class="dashboard_device dashboard_left">
+      <div id="' + device.name + '_container_left" class="dashboard_device dashboard_left">
         <div class="dashboard_device_text">' + device.name + '</div>
       </div>
     ')
 
     $('#device_container_right').append('
-      <div id="device-' + device.id + '_container_right" class="dashboard_device dashboard_right">
+      <div id="device-' + device.name + '_container_right" class="dashboard_device dashboard_right">
         <div class="device_bar_border">                     
           <div class="device_bar">                          
           </div>                                            
         </div>
         <div class="bar_text">                           
-          <sup id="device-' + device.id + '_usage"></sup>                                  
+          <sup id="device-' + device.name + '_usage"></sup>                                  
           /
-          <sub id="device-' + device.id + '_allowance"></sub>                                
+          <sub id="device-' + device.name + '_allowance"></sub>                                
         </div>
       </div>
     ')
 
-  $('#device-' + device.id + '_container_right .device_bar').width(percent_usage + '%')
-  $('#device-' + device.id + '_usage').text(device_usage)
-  $('#device-' + device.id + '_allowance').text(device_allowance + 'GB')
+  $('#device-' + device.name + '_container_right .device_bar').width(percent_usage + '%')
+  $('#device-' + device.name + '_usage').text(device_usage)
+  $('#device-' + device.name + '_allowance').text(device_allowance + 'GB')
 
-now.bandwidthUpdate = (state) ->
-  console.log state
-"""
+now.updateView = (state) ->
+
+  #TODO only update if within date range of view
+  #
   updateHousehold(state.household)
-  updateUser(user) for user in state.users
-  updateDevice(device) for device in state.devices
-"""
+  #updateUser(user) for user in state.users
+  updateDevice(mac, device) for mac, device of state.devices
+
 now.ready ->
   now.serverOutput "Client connected through Now.JS"
+  now.queryMonths 2011, 10, 2011, 11
