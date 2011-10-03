@@ -3,5 +3,3 @@ CREATE DATABASE bandwidth_data;
 GRANT ALL PRIVILEGES ON bandwidth_data.* TO 'homework'@'localhost';
 USE bandwidth_data;
 CREATE TABLE bandwidth_hours ( date DATE, hour TINYINT, ip VARCHAR(16), bytes INTEGER, PRIMARY KEY(date,hour,ip));
-CREATE TABLE bandwidth_days ( date DATE, ip VARCHAR(16), bytes INTEGER, PRIMARY KEY(date,ip));
-CREATE TABLE bandwidth_months ( year YEAR, month TINYINT, ip VARCHAR(16), bytes INTEGER, PRIMARY KEY(year,month,ip));

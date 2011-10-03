@@ -1,6 +1,11 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
+aggregator = require('./aggregator').aggregator
+
+aggregator.initialize()
+
+"""
 HWDashboardLogger = require('./logger').logger
 log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 
@@ -39,7 +44,6 @@ todays_state =
               usage:        0
               allowance:    900000000
   devices: {}
-
 # Update todays state from stream
 stream_jsrpc.on('message', (data) ->
   if data is "Success"
@@ -59,13 +63,11 @@ io_server.now.queryMonths = (startYear, startMonth, endYear, endMonth) ->
   ns = state_builder.parseResult(dd[0], 0, month_start, month_end)
   io_server.now.updateView ns
   
-  """
   query_jsrpc.query("SQL:select * from BWUsage range (" + month_start + ", " + month_end + ")") 
 
   query_jsrpc.on('message', (data) ->
     io_server.now.updateView state_builder.parseResult(data, 0, month_start, month_end)
   )
-  """
 
 rest_server.get('/*', (req, res) ->
   res.sendfile('../public/index.html', (err) ->
@@ -79,10 +81,9 @@ if !module.parent
   )
   log.notice "Dashboard server listening on port " + DASHBOARD_PORT
   process.on 'SIGINT', ->
-    """
     stats_jsrpc.disconnect()
     stats_jsrpc.on 'disconnected', ->
       log.notice "HWDashboard killed by SIGINT, exited gracefully"
       process.exit(0)
-    """
     process.exit(0)
+"""
