@@ -1,0 +1,84 @@
+  <div id="sidebar">
+    <div id="sidebar_content">
+      <div class="dashboard_row">
+        <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white">
+          <div style="float:left"><</div>
+          <div style="float:right">></div>
+          <div id="dashboard_date_month">{{month}}</div>
+        </div>
+      </div>
+      <div id="household_container_left" class="dashboard_row">
+        <div class="dashboard_header dashboard_left">
+          <img src="/home.png"/><div class="hw_sub_title">Household</div>
+        </div>
+      </div>
+      <div id="user_container_left" class="dashboard_row">
+        <div class="dashboard_header dashboard_left">
+          <img src="/users.png"/><div class="hw_sub_title">Users</div>
+        </div>
+        {{#each users}}
+          <div class="dashboard_user dashboard_left">
+            <div class="dashboard_user_text">{{this.id}}</div>
+          </div>  
+        {{/each}}
+    </div>
+      <div id="device_container_left" class="dashboard_row">
+        <div class="dashboard_header dashboard_left">
+          <img src="/device.png"/><div class="hw_sub_title">Devices</div>
+        </div>
+        {{#each devices}}
+          <div class="dashboard_user dashboard_left">
+            <div class="dashboard_user_text">{{this.id}}</div>
+          </div>  
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  <div id="dashboard_content">
+    <div class="dashboard_date dashboard_right" style="height:26px">
+    </div>
+    <div id="household_container_right" class="dashboard_header dashboard_right">
+      <div class="household_bar_border">                     
+        <div class="household_bar" style="width:{{usagePercentage household.usage household.allowance}}%">                          
+        </div>                                            
+      </div>
+      <div id="household_bar_text" class="bar_text">                           
+        <sup id="household_usage">{{toGigabytes household.usage}}</sup>                                  
+        /
+        <sub id="household_allowance">{{toGigabytes household.allowance}}GB</sub>
+      </div>
+    </div>
+    <div id="user_container_right">
+      <div class="dashboard_header dashboard_right" style="padding-top:15px;min-height: 37px">Click a user to see device usage</div>
+        {{#each users}}
+        <div class="dashboard_user dashboard_right">
+          <div class="user_bar_border"> 
+            <div class="user_bar" style="width:{{usagePercentage this.usage this.allowance}}%">
+            </div>                                            
+          </div>
+          <div class="bar_text">                           
+            <sup>{{toGigabytes this.usage}}</sup>                                  
+            /
+            <sub>{{toGigabytes this.allowance}}GB</sub> 
+          </div>
+        </div>
+        {{/each}}
+    </div>
+    <div id="device_container_right">
+      <div class="dashboard_header dashboard_right" style="padding-top:15px;min-height:37px"></div>
+       {{#each devices}}
+        <div class="dashboard_device dashboard_right">
+          <div class="device_bar_border"> 
+            <div class="device_bar" style="width:{{usagePercentage this.usage this.allowance}}%">
+            </div>                                            
+          </div>
+          <div class="bar_text">                           
+            <sup>{{toGigabytes this.usage}}</sup>                                  
+            /
+            <sub>{{toGigabytes this.allowance}}GB</sub> 
+          </div>
+        </div>
+        {{/each}}
+    </div>
+  </div>
+</div>
