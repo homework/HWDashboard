@@ -1,11 +1,13 @@
 (function() {
-  var viewz;
+  var socket, viewz;
   viewz = {};
-  now.updateView = function(model) {
+  socket = io.connect();
+  socket.on('updateView', function(model) {
+    console.log("Got update");
     viewz.update(model);
     return viewz.render();
-  };
-  now.ready(function() {
+  });
+  $j(document).ready(function() {
     var init;
     init = new models.MonthlyAllowance({
       id: "August-2011",
@@ -18,7 +20,9 @@
     });
     viewz.render();
     return setTimeout(function() {
-      return now.serverOutput("Ready boss");
+      return socket.emit("cli", {
+        str: "Ready boss"
+      });
     }, 1000);
   });
 }).call(this);

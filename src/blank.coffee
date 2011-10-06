@@ -1,7 +1,7 @@
 stats_jsrpc = require('./jsrpc').jsrpc
 
 stats_jsrpc.connect()
-stats_jsrpc.query("SQL:select * from Flows [range 600 seconds]")
+stats_jsrpc.query("SQL:select * from Flows INTERVAL (124a2745759fe820, 124a274575a53780)")
 
 stats_jsrpc.on('message', (data) ->
   console.log data

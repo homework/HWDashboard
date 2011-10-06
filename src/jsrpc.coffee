@@ -167,6 +167,7 @@ class JSRPC extends EventEmitter
             when Command.RESPONSE
               if (state == RPCState.AWAITING_RESPONSE or RPCState.QUERY_SENT) and seq_no == outboundSeqNo
                 @setState(RPCState.IDLE, 1)
+                console.log data.slice(4)
                 @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
                 pktr.sendCommand(Command.RACK, "", outboundSubPort, outboundSeqNo)
                 log.debug "RESPONSE received: " + data.slice(4)
