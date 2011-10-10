@@ -79,8 +79,8 @@ rest_server.get('/:base', (req, res) ->
 rest_server.get('/:base/*?', (req, res) ->
   model_query = req.params[0]
   if req.xhr
-    dashORM.query req.params.base, model_query.split("/")
-    res.json(dashboardModel.monthlyallowances.get(model_query).xport())
+    console.log dashORM.query req.params.base, model_query.split("/")
+    #res.json(dashboardModel.monthlyallowances.get(model_query).xport())
   else if req.params.base.indexOf(".") is -1
     res.render(req.params.base+'.ejs')
 )

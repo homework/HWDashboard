@@ -96,7 +96,7 @@ models.DashboardModel = BB.Model.extend({
       )
     )
 
-
+    #console.log @monthlyallowances.get("2011/10")
 
 })
     

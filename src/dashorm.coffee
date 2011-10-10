@@ -4,8 +4,11 @@ MYSQL_USERNAME  = 'homework'
 MYSQL_PASSWORD  = 'whatever'
 MYSQL_DATABASE  = 'bandwidth_data'
 
+models = require('../public/scripts/models').models
 mysql_lib = require('mysql')
-
+dashboardModel = new models.DashboardModel()
+#dashboardModel.populateTestData()
+ 
 class DashORM
   
   mysql = null
@@ -26,7 +29,7 @@ class DashORM
     switch model
 
       when "allowances"
-        return getMonthlyAllowance parameters[0], parameters[1]
+        return @getMonthlyAllowance parameters[0], parameters[1]
 
       when "usage"
         console.log "No usage ORM"
@@ -35,26 +38,32 @@ class DashORM
   getMonthlyAllowance: (year, month) ->
 
     month_id     = year + "-" + month
-    date_string += month_id + "-01"
+    date_string  = month_id + "-01"
 
-    m = new models.MonthlyAllowance(
-      { id: month_id }
+    dashboardModel.monthlyallowances.add(
+      new models.MonthlyAllowance(
+        { id: month_id }
+      )
     )
 
     month_totals = mysql.query(
-      "SELECT ip, SUM(bytes) FROM bandwidth_data WHERE date " +
-      "BETWEEN '?' AND DATE_ADD('?', INTERVAL 1 MONTH) GROUP BY ip",
+      "SELECT ip, SUM(bytes) FROM bandwidth_hours WHERE date " +
+      "BETWEEN ? AND DATE_ADD(?, INTERVAL 1 MONTH) GROUP BY ip",
       [date_string, date_string]
     )
 
     month_totals.on 'row', (row) ->
-      models.monthlyallowances.get(month_id).devices.add(
-        new models.MonthlyAllowance
+      dashboardModel.monthlyallowances.get(month_id).devices.add(
+        new models.Allowance
           {
             id:         row.ip
             usage:      row.bytes
             allowance:  0
           }
       )
+
+    console.log "hi"
+    console.log dashboardModel.monthlyallowances.get(month_id)
+    return dashboardModel.monthlyallowances.get(month_id)
 
 exports.dashorm = new DashORM
