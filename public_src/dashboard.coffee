@@ -1,17 +1,41 @@
-viewz = {}
+current_view = 0
 
 socket = io.connect()
 
 socket.on 'updateView', (model) ->
   console.log "Got update"
-  viewz.update(model)
-  viewz.render()
+  current_view.update(model)
+  current_view.render()
 
 $j(document).ready( ->
-  init = new models.MonthlyAllowance({ id: "August-2011", usage: 40, allowance: 100})
-  viewz = new DashboardViews.MonthlyAllowanceView({model: init, el: $j("#dashboard")})
-  viewz.render()
-  setTimeout( ->
-    socket.emit "cli", { str: "Ready boss" }
-  ,1000)
+
+  path = window.location.pathname.slice(1)
+  slash = path.indexOf("/")
+
+  if slash isnt -1
+    base    = path.slice 0, slash
+    params  = path.slice slash+1
+  else
+    base    = path
+
+    #Default models/views
+    switch base
+
+      when "allowances"
+        current_view = new DashboardViews.MonthlyAllowanceView(
+          {
+            model: new models.MonthlyAllowance()
+            el: $j("#dashboard")
+          }
+        )
+        current_date = new Date()
+        params = current_date.getFullYear() + "/" + (parseInt(current_date.getMonth()+1))
+      when "usage"
+        console.log "I don't exist"
+
+  $j.get("/" + base + "/" + params, (data) ->
+    current_view.update(data)
+    current_view.render()
+  )
 )
+

@@ -47,53 +47,46 @@
       return console.log("Created dashboard model");
     },
     populateTestData: function() {
-      var test_month;
       console.log("in");
-      test_month = this.monthlyallowances.add(new models.MonthlyAllowance({
-        id: "October-2011"
+      this.monthlyallowances.add(new models.MonthlyAllowance({
+        id: "2011/10"
       }));
-      this.monthlyallowances.get("October-2011").household = new models.Allowance({
+      this.monthlyallowances.get("2011/10").household = new models.Allowance({
         usage: 3400000000,
         allowance: 6800000000
       });
-      this.monthlyallowances.get("October-2011").users.add(new models.Allowance({
+      this.monthlyallowances.add(new models.MonthlyAllowance({
+        id: "2011/05"
+      }));
+      this.monthlyallowances.get("2011/05").household = new models.Allowance({
+        usage: 33400000000,
+        allowance: 168000000000
+      });
+      this.monthlyallowances.get("2011/05").users.add(new models.Allowance({
+        id: "Bill",
+        usage: 000000,
+        allowance: 1000000
+      }));
+      this.monthlyallowances.get("2011/10").users.add(new models.Allowance({
         id: "Bill",
         usage: 400000,
         allowance: 1000000
       }));
-      this.monthlyallowances.get("October-2011").users.add(new models.Allowance({
+      this.monthlyallowances.get("2011/10").users.add(new models.Allowance({
         id: "Bob",
         usage: 500000,
         allowance: 1100000
       }));
-      this.monthlyallowances.get("October-2011").devices.add(new models.Allowance({
+      this.monthlyallowances.get("2011/10").devices.add(new models.Allowance({
         id: "Macbook Pro",
         usage: 100000,
         allowance: 10000000000
       }));
-      return this.monthlyallowances.get("October-2011").devices.add(new models.Allowance({
+      return this.monthlyallowances.get("2011/10").devices.add(new models.Allowance({
         id: "Android",
         usage: 600000,
         allowance: 1100000
       }));
-    }
-  });
-  HBS.registerHelper("toGigabytes", function(bytes) {
-    var gb;
-    gb = (Math.round(bytes / 1073741824 * 100000) / 100000).toFixed(2);
-    if (gb !== "NaN") {
-      return gb;
-    } else {
-      return "XX.XX";
-    }
-  });
-  HBS.registerHelper("usagePercentage", function(usage, allowance) {
-    var percent;
-    percent = (usage / allowance) * 100;
-    if (percent !== "NaN") {
-      return percent;
-    } else {
-      return "XX.XX";
     }
   });
   BB.Model.prototype.xport = function(opt) {

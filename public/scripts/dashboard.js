@@ -1,28 +1,37 @@
 (function() {
-  var socket, viewz;
-  viewz = {};
+  var current_view, socket;
+  current_view = 0;
   socket = io.connect();
   socket.on('updateView', function(model) {
     console.log("Got update");
-    viewz.update(model);
-    return viewz.render();
+    current_view.update(model);
+    return current_view.render();
   });
   $j(document).ready(function() {
-    var init;
-    init = new models.MonthlyAllowance({
-      id: "August-2011",
-      usage: 40,
-      allowance: 100
+    var base, current_date, params, path, slash;
+    path = window.location.pathname.slice(1);
+    slash = path.indexOf("/");
+    if (slash !== -1) {
+      base = path.slice(0, slash);
+      params = path.slice(slash + 1);
+    } else {
+      base = path;
+      switch (base) {
+        case "allowances":
+          current_view = new DashboardViews.MonthlyAllowanceView({
+            model: new models.MonthlyAllowance(),
+            el: $j("#dashboard")
+          });
+          current_date = new Date();
+          params = current_date.getFullYear() + "/" + (parseInt(current_date.getMonth() + 1));
+          break;
+        case "usage":
+          console.log("I don't exist");
+      }
+    }
+    return $j.get("/" + base + "/" + params, function(data) {
+      current_view.update(data);
+      return current_view.render();
     });
-    viewz = new DashboardViews.MonthlyAllowanceView({
-      model: init,
-      el: $j("#dashboard")
-    });
-    viewz.render();
-    return setTimeout(function() {
-      return socket.emit("cli", {
-        str: "Ready boss"
-      });
-    }, 1000);
   });
 }).call(this);

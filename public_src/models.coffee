@@ -51,32 +51,46 @@ models.DashboardModel = BB.Model.extend({
 
   populateTestData: () ->
     console.log "in"
-    test_month = @monthlyallowances.add(
+    @monthlyallowances.add(
       new models.MonthlyAllowance(
-        { id: "October-2011" }
+        { id: "2011/10" }
       )
     )
-    @monthlyallowances.get("October-2011").household =
+    @monthlyallowances.get("2011/10").household =
       new models.Allowance(
         { usage: 3400000000, allowance: 6800000000 }
       )
-
-    @monthlyallowances.get("October-2011").users.add(
+    @monthlyallowances.add(
+      new models.MonthlyAllowance(
+        { id: "2011/05" }
+      )
+    )
+    @monthlyallowances.get("2011/05").household =
+      new models.Allowance(
+        { usage: 33400000000, allowance: 168000000000 }
+      )
+    @monthlyallowances.get("2011/05").users.add(
+      new models.Allowance(
+        { id: "Bill", usage: 000000, allowance: 1000000 }
+      )
+    )
+ 
+    @monthlyallowances.get("2011/10").users.add(
       new models.Allowance(
         { id: "Bill", usage: 400000, allowance: 1000000 }
       )
     )
-    @monthlyallowances.get("October-2011").users.add(
+    @monthlyallowances.get("2011/10").users.add(
       new models.Allowance(
         { id: "Bob", usage: 500000, allowance: 1100000 }
       )
     )
-    @monthlyallowances.get("October-2011").devices.add(
+    @monthlyallowances.get("2011/10").devices.add(
       new models.Allowance(
         { id: "Macbook Pro", usage: 100000, allowance: 10000000000 }
       )
     )
-    @monthlyallowances.get("October-2011").devices.add(
+    @monthlyallowances.get("2011/10").devices.add(
       new models.Allowance(
         { id: "Android", usage: 600000, allowance: 1100000 }
       )
@@ -86,17 +100,6 @@ models.DashboardModel = BB.Model.extend({
 
 })
     
-
-HBS.registerHelper("toGigabytes", (bytes) ->
-  gb = (Math.round(bytes/1073741824*100000)/100000).toFixed(2)
-  return (if gb isnt "NaN" then gb else "XX.XX")
-)
-
-HBS.registerHelper("usagePercentage", (usage, allowance) ->
-  percent = (usage / allowance) * 100
-  return (if percent isnt "NaN" then percent else "XX.XX")
-)
-
 BB.Model.prototype.xport = (opt) ->
   result = {}
   settings = __({recurse: true}).extend(opt || {})
