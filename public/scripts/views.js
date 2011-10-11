@@ -18,8 +18,8 @@
     },
     render: function() {
       var id_date, js;
-      id_date = this.model.id.split("/");
-      console.log(this.model);
+      id_date = this.model.id.split("-");
+      console.log(this.model.devices);
       js = {
         month: id_date[1],
         year: id_date[0],

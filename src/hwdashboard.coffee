@@ -25,7 +25,7 @@ io_server = sio_app.listen(rest_server)
 
 rest_server.configure( ->
   rest_server.use express.static(__dirname + '/../public')
-  rest_server.use(express.bodyParser())
+  #rest_server.use(express.bodyParser())
   rest_server.set 'views', __dirname + '/../public/views'
 )
 
@@ -77,10 +77,9 @@ rest_server.get('/:base', (req, res) ->
 )
 
 rest_server.get('/:base/*?', (req, res) ->
-  model_query = req.params[0]
+
   if req.xhr
-    console.log dashORM.query req.params.base, model_query.split("/")
-    #res.json(dashboardModel.monthlyallowances.get(model_query).xport())
+    dashORM.query req.params.base, req.params[0].split("/"), res
   else if req.params.base.indexOf(".") is -1
     res.render(req.params.base+'.ejs')
 )

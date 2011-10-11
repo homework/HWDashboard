@@ -34,6 +34,7 @@ $j(document).ready( ->
         console.log "I don't exist"
 
   $j.get("/" + base + "/" + params, (data) ->
+    console.log data
     current_view.update(data)
     current_view.render()
   )

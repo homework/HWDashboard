@@ -17,8 +17,8 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
     @model = new models.MonthlyAllowance().mport(m)
   render: () ->
 
-    id_date = @model.id.split("/")
-    console.log @model
+    id_date = @model.id.split("-")
+    console.log @model.devices
     js =
       {
         month:      id_date[1]

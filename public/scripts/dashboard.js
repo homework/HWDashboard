@@ -30,6 +30,7 @@
       }
     }
     return $j.get("/" + base + "/" + params, function(data) {
+      console.log(data);
       current_view.update(data);
       return current_view.render();
     });
