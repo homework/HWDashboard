@@ -153,6 +153,9 @@ body {
   margin: 0px auto;
 }
 
+#prev { text-decoration: none; color: white; }
+#next { text-decoration: none; color: white; }
+
 #sidebar {
   width: 296px;
   min-height: 100%;

@@ -13,10 +13,10 @@ DashboardViews = this.DashboardViews = {}
 
 DashboardViews.MonthlyAllowanceView = BB.View.extend({
 
-  update: (m) ->
-    @model = new models.MonthlyAllowance().mport(m)
-  render: () ->
+  el: $j('#dashboard')
 
+  render: (m) ->
+    @model = new models.MonthlyAllowance().mport(m)
     id_date = @model.id.split("-")
     console.log @model.devices
     js =
@@ -27,12 +27,28 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
         users:      @model.users.toJSON()
         devices:    @model.devices.toJSON()
       }
-    $j.get("/views/allowances.ejs", (data) ->
+
+    $j.get("/views/allowances.ejs", (data) =>
       template = HBS.compile data
       $j("#dashboard").html(template(js))
+
+      $j("#prev").bind('click', () =>
+        id_date = @model.id.split("-")
+        prev_date = new Date(id_date[0], id_date[1]-2)
+        $j.get("/allowances/" + prev_date.getFullYear() + "/" + parseInt(prev_date.getMonth()+1), (data) =>
+          @render data
+        )
+      )
+
+      $j("#next").bind('click', () =>
+        id_date = @model.id.split("-")
+        next_date = new Date(id_date[0], id_date[1])
+        $j.get("/allowances/" + next_date.getFullYear() + "/" + parseInt(next_date.getMonth()+1), (data) =>
+          @render data
+        )
+      )
     )
 })
-
 HBS.registerHelper("toGigabytes", (bytes) ->
   gb = (Math.round(bytes/1073741824*100000)/100000).toFixed(2)
   return (if gb isnt "NaN" then gb else "XX.XX")

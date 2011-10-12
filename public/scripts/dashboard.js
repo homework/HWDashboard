@@ -4,8 +4,7 @@
   socket = io.connect();
   socket.on('updateView', function(model) {
     console.log("Got update");
-    current_view.update(model);
-    return current_view.render();
+    return current_view.render(model);
   });
   $j(document).ready(function() {
     var base, current_date, params, path, slash;
@@ -19,8 +18,7 @@
       switch (base) {
         case "allowances":
           current_view = new DashboardViews.MonthlyAllowanceView({
-            model: new models.MonthlyAllowance(),
-            el: $j("#dashboard")
+            model: new models.MonthlyAllowance()
           });
           current_date = new Date();
           params = current_date.getFullYear() + "/" + (parseInt(current_date.getMonth() + 1));
@@ -30,9 +28,7 @@
       }
     }
     return $j.get("/" + base + "/" + params, function(data) {
-      console.log(data);
-      current_view.update(data);
-      return current_view.render();
+      return current_view.render(data);
     });
   });
 }).call(this);

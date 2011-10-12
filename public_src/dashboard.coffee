@@ -4,8 +4,7 @@ socket = io.connect()
 
 socket.on 'updateView', (model) ->
   console.log "Got update"
-  current_view.update(model)
-  current_view.render()
+  current_view.render model
 
 $j(document).ready( ->
 
@@ -25,7 +24,6 @@ $j(document).ready( ->
         current_view = new DashboardViews.MonthlyAllowanceView(
           {
             model: new models.MonthlyAllowance()
-            el: $j("#dashboard")
           }
         )
         current_date = new Date()
@@ -34,9 +32,6 @@ $j(document).ready( ->
         console.log "I don't exist"
 
   $j.get("/" + base + "/" + params, (data) ->
-    console.log data
-    current_view.update(data)
-    current_view.render()
+    current_view.render data
   )
 )
-
