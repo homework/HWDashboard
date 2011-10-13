@@ -9,6 +9,13 @@ else
 
 models = this.models = {}
 
+models.Device = BB.Model.extend({
+
+  initialize: (args) ->
+    console.log "Created " + args.id + " device"
+
+})
+
 models.Allowance = BB.Model.extend({
   
   initialize: (args) ->
@@ -30,9 +37,10 @@ models.MonthlyAllowance = BB.Model.extend({
 
   initialize: (args) ->
     @id = args.id
-    @household  = new models.Allowance( { id: "household", allowance: 5000 } )
+    @household  = new models.Allowance( { id: "household", usage: 0, allowance: 10000000 } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
+    @lastUpdated = new Date().getTime()
 
 })
 
@@ -58,7 +66,7 @@ models.DashboardModel = BB.Model.extend({
     )
     @monthlyallowances.get("2011/10").household =
       new models.Allowance(
-        { usage: 3400000000, allowance: 6800000000 }
+        { usage: 0, allowance: 6800000000 }
       )
     @monthlyallowances.add(
       new models.MonthlyAllowance(

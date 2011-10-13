@@ -10,6 +10,11 @@
     HBS = Handlebars;
   }
   models = this.models = {};
+  models.Device = BB.Model.extend({
+    initialize: function(args) {
+      return console.log("Created " + args.id + " device");
+    }
+  });
   models.Allowance = BB.Model.extend({
     initialize: function(args) {
       if (!args.usage) {
@@ -29,10 +34,12 @@
       this.id = args.id;
       this.household = new models.Allowance({
         id: "household",
-        allowance: 5000
+        usage: 0,
+        allowance: 10000000
       });
       this.users = new models.Allowances();
-      return this.devices = new models.Allowances();
+      this.devices = new models.Allowances();
+      return this.lastUpdated = new Date().getTime();
     }
   });
   models.MonthlyAllowances = BB.Collection.extend({
@@ -52,7 +59,7 @@
         id: "2011/10"
       }));
       this.monthlyallowances.get("2011/10").household = new models.Allowance({
-        usage: 3400000000,
+        usage: 0,
         allowance: 6800000000
       });
       this.monthlyallowances.add(new models.MonthlyAllowance({

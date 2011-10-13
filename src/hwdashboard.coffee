@@ -34,6 +34,7 @@ dashboardModel.populateTestData()
  
 io_server.sockets.on "connection", (socket) ->
   
+  socket.join('allowances')
   socket.on "cli", (d) ->
     socket.emit "updateView", dashboardModel.monthlyallowances.get("10-2011").xport()
 
@@ -41,29 +42,20 @@ io_server.sockets.on "connection", (socket) ->
 package_timeout = 0
 package_data = []
 
-"""
 stream_jsrpc.connect()
-stream_jsrpc.query("SQL:subscribe BWUsageLast 127.0.0.1 ")
+stream_jsrpc.query("SQL:subscribe BWStatsLast 127.0.0.1 ")
 
 stream_jsrpc.on('message', (msg) ->
   if msg isnt "Success"
     package_data.push pkg for pkg in msg
     if package_timeout then clearTimeout(package_timeout)
     package_timeout = setTimeout( ->
-      total = 0
-      total += parseInt(i.bytes) for i in package_data
-      current_date = new Date()
-      date_query = current_date.getFullYear() + "/" + (parseInt(current_date.getMonth()+1))
-      household_current_month = dashboardModel.monthlyallowances.get(date_query).household
-      household_current_month.set({ usage : household_current_month.get("usage") + total })
-      console.log household_current_month
-      
+      io_server.sockets.in('allowances').emit 'updateView', dashORM.liveUpdate(package_data)
       package_data.length = 0
     , 3000)
 
     console.log ("Added to package")
 )
-"""
 
 stream_jsrpc.on('timedout', ->
   log.error "JSRPC timed out, process exiting"

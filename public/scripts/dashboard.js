@@ -28,6 +28,7 @@
       }
     }
     return $j.get("/" + base + "/" + params, function(data) {
+      console.log(data);
       return current_view.render(data);
     });
   });
