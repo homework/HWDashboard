@@ -19,8 +19,8 @@ models.Device = BB.Model.extend({
 models.Allowance = BB.Model.extend({
   
   initialize: (args) ->
-    if (!args.usage)
-      @usage = 0
+    if !args.usage
+      @set { usage: 0 }
 
     console.log "Created " + args.id + " allowance"
 })
@@ -37,7 +37,7 @@ models.MonthlyAllowance = BB.Model.extend({
 
   initialize: (args) ->
     @id = args.id
-    @household  = new models.Allowance( { id: "household", usage: 0, allowance: 10000000 } )
+    @household  = new models.Allowance( { id: "household" } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
     @lastUpdated = new Date().getTime()
@@ -104,8 +104,6 @@ models.DashboardModel = BB.Model.extend({
       )
     )
 
-    #console.log @monthlyallowances.get("2011/10")
-
 })
     
 BB.Model.prototype.xport = (opt) ->
@@ -155,4 +153,3 @@ BB.Model.prototype.mport = (data, silent) ->
 
   process(this, JSON.parse(data))
   return this
-

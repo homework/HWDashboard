@@ -63,6 +63,10 @@ stream_jsrpc.on('timedout', ->
 )
 log.info "JSRPC setup executed"
 
+rest_server.get('/', (req,res) ->
+  res.redirect('/allowances')
+)
+
 rest_server.get('/:base', (req, res) ->
   if req.params.base.indexOf(".") is -1
     res.render(req.params.base+'.ejs')

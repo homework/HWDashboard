@@ -50,6 +50,12 @@
       }, this));
     }
   });
+  DashboardViews.DayUsageView = BB.View.extend({
+    el: $j('#usage_panel'),
+    render: function(m) {
+      return console.log("Usage render NYI");
+    }
+  });
   HBS.registerHelper("toGigabytes", function(bytes) {
     var gb;
     gb = (Math.round(bytes / 1073741824 * 100000) / 100000).toFixed(2);
@@ -62,10 +68,14 @@
   HBS.registerHelper("usagePercentage", function(usage, allowance) {
     var percent;
     percent = (usage / allowance) * 100;
-    if (percent !== "NaN") {
-      return percent;
+    if (percent > 100) {
+      return 100;
     } else {
-      return "XX.XX";
+      if (percent !== "NaN") {
+        return percent;
+      } else {
+        return "XX.XX";
+      }
     }
   });
   HBS.registerHelper("getMonth", function(month_no) {

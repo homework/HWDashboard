@@ -49,6 +49,16 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
       )
     )
 })
+
+DashboardViews.DayUsageView = BB.View.extend({
+
+  el: $j('#usage_panel')
+
+  render: (m) ->
+    console.log "Usage render NYI"
+
+})
+
 HBS.registerHelper("toGigabytes", (bytes) ->
   gb = (Math.round(bytes/1073741824*100000)/100000).toFixed(2)
   return (if gb isnt "NaN" then gb else "XX.XX")
@@ -56,7 +66,10 @@ HBS.registerHelper("toGigabytes", (bytes) ->
 
 HBS.registerHelper("usagePercentage", (usage, allowance) ->
   percent = (usage / allowance) * 100
-  return (if percent isnt "NaN" then percent else "XX.XX")
+  if percent > 100
+    return 100
+  else
+    return (if percent isnt "NaN" then percent else "XX.XX")
 )
 
 HBS.registerHelper("getMonth", (month_no) ->

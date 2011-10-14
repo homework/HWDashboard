@@ -18,7 +18,9 @@
   models.Allowance = BB.Model.extend({
     initialize: function(args) {
       if (!args.usage) {
-        this.usage = 0;
+        this.set({
+          usage: 0
+        });
       }
       return console.log("Created " + args.id + " allowance");
     }
@@ -33,9 +35,7 @@
     initialize: function(args) {
       this.id = args.id;
       this.household = new models.Allowance({
-        id: "household",
-        usage: 0,
-        allowance: 10000000
+        id: "household"
       });
       this.users = new models.Allowances();
       this.devices = new models.Allowances();
