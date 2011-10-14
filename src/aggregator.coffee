@@ -4,16 +4,14 @@ MYSQL_USERNAME  = 'homework'
 MYSQL_PASSWORD  = 'whatever'
 MYSQL_DATABASE  = 'bandwidth_data'
 
-mysql_lib = require('mysql')
-hwdb      = require('./jsrpc').jsrpc
+mysql_lib         = require('mysql')
+hwdb_aggregator   = require('./hwdbaggregator').hwdbaggregator
 
 class Aggregator
 
   mysql = null
 
   initialize: () ->
-
-    hwdb.connect()
 
     mysql = mysql_lib.createClient({
       host:       MYSQL_HOST
@@ -29,37 +27,37 @@ class Aggregator
 
     last_insert_check = mysql.query('SELECT date,hour FROM bandwidth_hours ORDER BY date DESC, hour DESC LIMIT 1')
 
-    last_insert_check.on 'row', (row) ->
+    last_insert_check.on 'row', (row) =>
 
-      date_last = new Date row.date.getUTCFullYear(), row.date.getUTCMonth(), row.date.getUTCDay()+1, row.hour
+      date_last = new Date row.date.getUTCFullYear(), row.date.getUTCMonth(), row.date.getUTCDate()+1, row.hour
 
       # Hours is 0-23, so we +1 but then -1 as we are looking for the previous hour
       date_now = new Date()
-      expected_last_date = new Date date_now.getUTCFullYear(), date_now.getUTCMonth(), date_now.getUTCDay(), date_now.getUTCHours()
+      expected_last_date = new Date date_now.getUTCFullYear(), date_now.getUTCMonth(), date_now.getUTCDate(), date_now.getUTCHours()+1
 
       #Check for lost aggregate data
-      if date_last.toLocaleString() < expected_last_date.toLocaleString()
-        console.log "Data missing"
-        """
-        START_HOUR
-        END_HOUR
+      if date_last < expected_last_date
+        missing_hours = ((expected_last_date - date_last) / 1000) / 60 / 60
+        console.log missing_hours
+        @recursivePopulator(expected_last_date, missing_hours)
 
-        #SETUP A SEQUENCE
-        for each missing hour
-          hwdb.query("SQL:select * from BWUsage where START END")
-          #ASYNC?
-          hwdb.on 'message', (data) ->
-            #MAP->REDUCE magic?
-            for each entry
-              sum[device]++
+  recursivePopulator: (end_date, hour_count) ->
 
-            mysql.query('INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)',
-                      [date, hour, ip, sum[device]]
-            )
-
-        CHECK:
-          SELECT .. BETWEEN START AND END
-          NUMBER OF ROWS CORRECT?
-        """
+    console.log "End: " + end_date
+    start_date = new Date(
+                            end_date.getUTCFullYear(),
+                            end_date.getUTCMonth(),
+                            end_date.getUTCDate(),
+                            end_date.getUTCHours() + 2 - hour_count
+                          )
+ 
+    console.log "Start: " + start_date.toLocaleString()
+    hwdb_aggregator.aggregateHour(start_date, (result) =>
+      #INSERT
+      #mysql.query('INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)',
+      #                [date, hour, ip, sum[device]]
+      if (hour_count-1) > 0
+        @recursivePopulator(end_date, hour_count-1)
+    )
 
 exports.aggregator = new Aggregator

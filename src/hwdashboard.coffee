@@ -1,6 +1,7 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
+"""
 dashORM = require('./dashorm').dashorm
 dashORM.initialize()
 """
@@ -85,7 +86,6 @@ if !module.parent
     addr = rest_server.address()
   )
   log.notice "Dashboard server listening on port " + DASHBOARD_PORT
-  """
   process.on 'SIGINT', ->
     stream_jsrpc.disconnect()
     stream_jsrpc.on 'disconnected', ->
