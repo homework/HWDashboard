@@ -4,10 +4,16 @@ class HWDBParser
 
   parseQueryOrResponse: (data) =>
 
-    data_lines = data.split('\n')
+    data_lines = (data.toString().slice(4)).split('\n')
     result = data_lines[0].split('<|>')
     column_count = parseInt result[2]
     row_count = parseInt result[3]
+
+    status =
+              status:   result[1]
+              columns:  column_count
+              rows:     row_count
+
 
     if column_count >= 1 and row_count >= 1
 
@@ -22,6 +28,8 @@ class HWDBParser
 
       results = []
 
+      results.push status
+
       for row in rows
         result = {}
         i = 0
@@ -32,7 +40,8 @@ class HWDBParser
       return results
 
     else
-
-      return result[1]
+      results = []
+      results.push status
+      return results
 
 exports.hwdbparser = new HWDBParser

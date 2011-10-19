@@ -7,6 +7,13 @@ dashORM.initialize()
 """
 aggregator = require('./aggregator').aggregator
 aggregator.initialize()
+
+process.on 'SIGINT', ->
+  aggregator.destroy()
+  setTimeout( ->
+    process.exit(0)
+  ,5000
+  )
 """
 HWDashboardLogger = require('./logger').logger
 log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL

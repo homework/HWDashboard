@@ -5,6 +5,8 @@ Defragger         = require('./defragger').defragger
 HWDashboardLogger = require('./logger').logger
 log               = new HWDashboardLogger "jsrpc", 7
 
+defrag = new Defragger()
+
 class JSRPC extends EventEmitter
 
   Command =
@@ -51,8 +53,6 @@ class JSRPC extends EventEmitter
   idleOutboundTimer = 0
   idleInboundTimer = 0
 
-  defrag = 0
-
   pingInterval = 15 # seconds
 
   setupCommandListener: ->
@@ -61,186 +61,190 @@ class JSRPC extends EventEmitter
 
       # If last fragment
       if frag_count is frag_no and frag_count != 1
-        defrag.push frag_count, (data.toString()).slice(4)
-        pktr.emit "command", sub_port, seq_no, command, defrag.getData(), 1, 1
-        defrag = 0
+        if defrag.getTotalLength() is 0 #Server did not get our RACK after last fragment, resend RACK
+          pktr.sendCommand(Command.RACK, "", sub_port, seq_no)
+        else
+          defrag.push frag_count, data.slice(4)
+          pktr.emit "command", sub_port, seq_no, command, defrag.getData(), 1, 1
+          defrag.reset()
+          return
+      else
 
-      if command isnt Command.FRAGMENT
-        data = data.toString()
+        log.debug inboundSubPort + " " + outboundSubPort
+        log.debug "Command: " + command + ", " + frag_count + ", " + frag_no + " SP: " + sub_port
 
-      log.debug inboundSubPort + " " + outboundSubPort
-      log.debug "Command: " + command + ", " + frag_count + ", " + frag_no + " SP: " + sub_port
+        if command is Command.FRAGMENT
 
-      if command is Command.FRAGMENT
+          if sub_port is outboundSubPort
 
-        if sub_port is outboundSubPort
+            if seq_no is outboundSeqNo or seq_no is outboundSeqNo+1
 
-          if seq_no is outboundSeqNo or seq_no is outboundSeqNo+1
+              log.debug "Fragment sequence number is correct"
 
-            log.debug "Fragment sequence number is correct"
+              total_length = pktr.bufToInt new Buffer(data.slice(0,2)), 2
+              fragment_length = pktr.bufToInt new Buffer(data.slice(2,4)), 2
 
-            total_length = pktr.bufToInt new Buffer(data.slice(0,2)), 2
-            fragment_length = pktr.bufToInt new Buffer(data.slice(2,4)), 2
+              log.debug "Fragment number: " + frag_count + "/" + frag_no
 
-            log.debug "Fragment number: " + frag_count + "/" + frag_no
+              if state is RPCState.AWAITING_RESPONSE
 
-            if state is RPCState.AWAITING_RESPONSE
+                if seq_no is outboundSeqNo and frag_count is 1
 
-              if seq_no is outboundSeqNo and frag_count is 1
+                  defrag = new Defragger()
+                  defrag.setup(frag_count, total_length)
+                  defrag.push frag_count, data.slice(4)
 
-                defrag = new Defragger(frag_no, total_length)
-                defrag.push frag_count, (data.toString()).slice(4)
+                  log.debug "Pushed first fragment into Defragger from server"
 
-                log.debug "Pushed first fragment into Defragger from server"
-
-                @setState(RPCState.FACK_SENT, 1)
-                pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
-
-            else if state is RPCState.FACK_SENT
-
-              if seq_no is outboundSeqNo and defrag
-
-                if (defrag.push frag_count, (data.toString()).slice(4)) is frag_count
-                  log.debug "Pushed new fragment into Defragger from server"
                   @setState(RPCState.FACK_SENT, 1)
                   pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
 
-        else if sub_port is inboundSubPort
+              else if state is RPCState.FACK_SENT
+
+                if seq_no is outboundSeqNo and defrag.getTotalLength()
+
+                  if (defrag.push frag_count, data.slice(4)) is frag_count
+                    log.debug "Pushed new fragment into Defragger from server"
+                    @setState(RPCState.FACK_SENT, 1)
+                    pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
+
+          else if sub_port is inboundSubPort
+
+            if seq_no is inboundSeqNo or seq_no is inboundSeqNo+1
+
+              log.debug "Fragment sequence number is correct"
+
+              fragment_length = data.slice(0,1)
+              total_length = data.slice(1,2)
+
+              log.debug "Fragment number:" + frag_count + "/" + frag_no
+
+              # Client received response but no RACK returned. Continue as normal
+              if state is RPCState.RESPONSE_SENT and seq_no is (inboundSeqNo+1) and frag_no is 1
+                  @setState(RPCState.IDLE, 0)
+
+              if state is RPCState.IDLE
+
+                defrag = new Defragger()
+                defrag.setup(frag_count, total_length)
+                defrag.push frag_count, data.slice(4)
+
+                log.debug "Pushed first fragment into Defragger from client"
+
+                @setState(RPCState.FACK_SENT, 0)
+                pktr.sendCommand(Command.FACK, "", sub_port, ++inboundSeqNo)
+
+              else if state == RPCState.FACK_SENT
+
+                if seq_no is inboundSeqNo and defrag.getTotalLength()
+
+                  if (defrag.push frag_no, data.slice(4)) is frag_count
+                    log.debug "Pushed new fragment into Defragger from client"
+                    @setState(RPCstate.FACK_SENT, 1)
+                    pktr.sendCommand(Command.FACK, "", sub_port, inboundSeqNo)
+
+        else if command is Command.PING
+
+          log.debug "Received PING, sending PACK"
+          pktr.sendCommand(Command.PACK, "", sub_port, seq_no)
+
+        else if sub_port is outboundSubPort # JSRPC(Requestor) -> RPCServer(Responder)
+
+          if seq_no is outboundSeqNo or seq_no is outboundSeqNo+1
+
+            log.debug "Sequence number is correct"
+
+            switch command
+
+              when Command.CACK
+                if state == RPCState.CONNECT_SENT
+                  log.debug "CONNECT acknowledged"
+                  @setState(RPCState.IDLE, 1)
+                  @emit 'connected'
+                  connected = true
+
+              when Command.QACK
+                if state == RPCState.QUERY_SENT and seq_no == outboundSeqNo
+                  log.debug "QUERY acknowledged"
+                  @setState(RPCState.AWAITING_RESPONSE, 1)
+
+              when Command.RESPONSE
+
+                if (state == RPCState.AWAITING_RESPONSE or RPCState.QUERY_SENT) and seq_no == outboundSeqNo
+                  @setState(RPCState.IDLE, 1)
+                  @emit 'message', hwdbparser.parseQueryOrResponse data
+                  pktr.sendCommand(Command.RACK, "", outboundSubPort, outboundSeqNo)
+                  log.debug "RESPONSE received: " + data
+                  @setState(RPCState.IDLE, 1)
+
+              when Command.SACK
+                if state == RPCState.SEQNO_SENT
+                  log.debug "SEQNO acknowledged"
+                  @setState(RPCState.IDLE, 1)
+                  @emit 'SACK'
+
+              when Command.DACK
+                if state == RPCState.DISCONNECT_SENT
+                  log.debug "DISCONNECT acknowledged"
+                  pktr.close()
+                  @emit 'disconnected'
+
+              when Command.PACK
+                  @clearIdleTimer(1)
+                  log.debug "PING acknowledged"
+                  @setState(RPCState.IDLE, 1) # Sets up new timer
+
+        else if sub_port is inboundSubPort or inboundSubPort is 0 # JSRPC(Responder) <- RPCServer(Requestor)
+
+          if inboundSubPort is 0
+            inboundSubPort = sub_port
+            inboundSeqNo = seq_no
+
+          if command == Command.SEQNO
+
+            log.debug "Server requesting SEQNO reset"
+
+            if state == RPCState.RESPONSE_SENT
+              log.debug "Server didn't get our RACK, ignoring"
+              @setState(RPCState.IDLE, 0)
+
+            if state == RPCState.IDLE
+              log.debug "SACK sent"
+              inboundSeqNo = seq_no
+              pktr.sendCommand(Command.SACK, "", sub_port, inboundSeqNo)
 
           if seq_no is inboundSeqNo or seq_no is inboundSeqNo+1
 
-            log.debug "Fragment sequence number is correct"
+            switch command
 
-            fragment_length = data.slice(0,1)
-            total_length = data.slice(1,2)
-
-            log.debug "Fragment number:" + frag_count + "/" + frag_no
-
-            # Client received response but no RACK returned. Continue as normal
-            if state is RPCState.RESPONSE_SENT and seq_no is (inboundSeqNo+1) and frag_no is 1
+              when Command.CONNECT
+                log.debug "Received CONNECT"
+                pktr.sendCommand(Command.CACK, "", inboundSubPort, inboundSeqNo)
                 @setState(RPCState.IDLE, 0)
 
-            if state is RPCState.IDLE
+              when Command.QUERY
+                log.debug "Received QUERY: " + data
+                @emit 'message', hwdbparser.parseQueryOrResponse data
+                pktr.sendCommand(Command.QACK, "", inboundSubPort, ++inboundSeqNo)
+                @setState(RPCState.QACK_SENT, 0)
+                pktr.sendCommand(Command.RESPONSE, "OK\0", inboundSubPort, inboundSeqNo)
+                @setState(RPCState.RESPONSE_SENT, 0)
 
-              defrag = new Defragger(frag_count, total_length)
-              defrag.push frag_count, (data.toString()).slice(4)
+              when Command.RACK
+                if state == RPCState.RESPONSE_SENT and seq_no == inboundSeqNo
+                  log.debug "Received RACK"
+                  @setState(RPCState.IDLE, 0)
 
-              log.debug "Pushed first fragment into Defragger from client"
+              when Command.DISCONNECT
+                log.debug "Server requested disconnect, sending DACK"
+                pktr.sendCommand(Command.DACK, "", inboundSubPort, inboundSeqNo)
+                @setState(RPCState.TIMEDOUT, 0)
 
-              @setState(RPCState.FACK_SENT, 0)
-              pktr.sendCommand(Command.FACK, "", sub_port, ++inboundSeqNo)
-
-            else if state == RPCState.FACK_SENT
-
-              if seq_no is inboundSeqNo and defrag
-
-                if (defrag.push frag_no, data.slice(4)) is frag_count
-                  log.debug "Pushed new fragment into Defragger from client"
-                  @setState(RPCstate.FACK_SENT, 1)
-                  pktr.sendCommand(Command.FACK, "", sub_port, inboundSeqNo)
-
-      else if command is Command.PING
-
-        log.debug "Received PING, sending PACK"
-        pktr.sendCommand(Command.PACK, "", sub_port, seq_no)
-
-      else if sub_port is outboundSubPort # JSRPC(Requestor) -> RPCServer(Responder)
-
-        if seq_no is outboundSeqNo or seq_no is outboundSeqNo+1
-
-          log.debug "Sequence number is correct"
-
-          switch command
-
-            when Command.CACK
-              if state == RPCState.CONNECT_SENT
-                log.debug "CONNECT acknowledged"
-                @setState(RPCState.IDLE, 1)
-                @emit 'connected'
-                connected = true
-
-            when Command.QACK
-              if state == RPCState.QUERY_SENT and seq_no == outboundSeqNo
-                log.debug "QUERY acknowledged"
-                @setState(RPCState.AWAITING_RESPONSE, 1)
-
-            when Command.RESPONSE
-              if (state == RPCState.AWAITING_RESPONSE or RPCState.QUERY_SENT) and seq_no == outboundSeqNo
-                @setState(RPCState.IDLE, 1)
-                console.log data.slice(4)
-                @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
-                pktr.sendCommand(Command.RACK, "", outboundSubPort, outboundSeqNo)
-                log.debug "RESPONSE received: " + data.slice(4)
-                @setState(RPCState.IDLE, 1)
-
-            when Command.SACK
-              if state == RPCState.SEQNO_SENT
-                log.debug "SEQNO acknowledged"
-                @setState(RPCState.IDLE, 1)
-                @emit 'SACK'
-
-            when Command.DACK
-              if state == RPCState.DISCONNECT_SENT
-                log.debug "DISCONNECT acknowledged"
-                pktr.close()
-                @emit 'disconnected'
-
-            when Command.PACK
-                @clearIdleTimer(1)
-                log.debug "PING acknowledged"
-                @setState(RPCState.IDLE, 1) # Sets up new timer
-
-      else if sub_port is inboundSubPort or inboundSubPort is 0 # JSRPC(Responder) <- RPCServer(Requestor)
-
-        if inboundSubPort is 0
-          inboundSubPort = sub_port
-          inboundSeqNo = seq_no
-
-        if command == Command.SEQNO
-
-          log.debug "Server requesting SEQNO reset"
-
-          if state == RPCState.RESPONSE_SENT
-            log.debug "Server didn't get our RACK, ignoring"
-            @setState(RPCState.IDLE, 0)
-
-          if state == RPCState.IDLE
-            log.debug "SACK sent"
-            inboundSeqNo = seq_no
-            pktr.sendCommand(Command.SACK, "", sub_port, inboundSeqNo)
-
-        if seq_no is inboundSeqNo or seq_no is inboundSeqNo+1
-
-          switch command
-
-            when Command.CONNECT
-              log.debug "Received CONNECT"
-              pktr.sendCommand(Command.CACK, "", inboundSubPort, inboundSeqNo)
-              @setState(RPCState.IDLE, 0)
-
-            when Command.QUERY
-              log.debug "Received QUERY: " + data.slice(4)
-              @emit 'message', hwdbparser.parseQueryOrResponse data.slice(4)
-              pktr.sendCommand(Command.QACK, "", inboundSubPort, ++inboundSeqNo)
-              @setState(RPCState.QACK_SENT, 0)
-              pktr.sendCommand(Command.RESPONSE, "OK\0", inboundSubPort, inboundSeqNo)
-              @setState(RPCState.RESPONSE_SENT, 0)
-
-            when Command.RACK
-              if state == RPCState.RESPONSE_SENT and seq_no == inboundSeqNo
-                log.debug "Received RACK"
-                @setState(RPCState.IDLE, 0)
-
-            when Command.DISCONNECT
-              log.debug "Server requested disconnect, sending DACK"
-              pktr.sendCommand(Command.DACK, "", inboundSubPort, inboundSeqNo)
-              @setState(RPCState.TIMEDOUT, 0)
-
-            when Command.PACK
-              @clearIdleTimer(0)
-              log.debug "Received PACK"
-              @setState(RPCState.IDLE, 0) # Sets up new timer
-    )
+              when Command.PACK
+                @clearIdleTimer(0)
+                log.debug "Received PACK"
+                @setState(RPCState.IDLE, 0) # Sets up new timer
+      )
 
 
   #Helper methods for testing, can JSRPC be extended with these for testing?
@@ -263,7 +267,6 @@ class JSRPC extends EventEmitter
       @clearIdleTimer(direction)
 
   setIdleTimer: (direction, ticks=3) ->
-    """
     if ticks is 0
 
       @setState(RPCState.TIMEDOUT)
@@ -294,10 +297,8 @@ class JSRPC extends EventEmitter
         @setIdleTimer(direction, ticks-1)
       , pingInterval * 1000)
 
-    """
   clearIdleTimer: (direction) ->
 
-    """"
     if direction is 0
 
       log.debug "Clearing inbound timer"
@@ -311,7 +312,6 @@ class JSRPC extends EventEmitter
 
       clearTimeout(idleOutboundTimer)
       idleOutboundTimer = 0
-    """
   connect: (address, port) ->
 
     @setupCommandListener()
@@ -331,7 +331,10 @@ class JSRPC extends EventEmitter
 
   query: (query) ->
 
-    query += lport + " Handler\0"
+    if query.indexOf("subscribe") isnt -1
+      query += lport + " Handler\0"
+    else
+      query += "\0"
 
     query_header =   String.fromCharCode(0) + String.fromCharCode(query.length)
     query_header +=  String.fromCharCode(0) + String.fromCharCode(query.length)
