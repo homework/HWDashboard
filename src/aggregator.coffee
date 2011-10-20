@@ -27,7 +27,7 @@ class Aggregator
 
     #Setup hourly cron job. Run before persistence check
     #Better to fail on a duplicate insert than miss the insert
-    cron('0 */5 * * * *', =>
+    cron('0 */2 * * * *', =>
 
       last_insert_check = mysql.query('SELECT date,hour FROM bandwidth_hours ORDER BY date DESC, hour DESC LIMIT 1')
 

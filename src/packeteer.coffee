@@ -1,16 +1,21 @@
 EventEmitter      = require('events').EventEmitter
 HWDashboardLogger = require('./logger').logger
-log               = new HWDashboardLogger("packeteer", 5)
 
 class Packeteer extends EventEmitter
 
   udp = require 'dgram'
-  inbound_socket  = udp.createSocket "udp4"
-  outbound_socket = udp.createSocket "udp4"
 
-  connectAddress  = '127.0.0.1'
-  connectPort     = 987
-  lport = 0
+  constructor: (address='127.0.0.1',port=987) ->
+
+    @log               = new HWDashboardLogger("packeteer", 5)
+
+    @inbound_socket  = udp.createSocket "udp4"
+    @outbound_socket = udp.createSocket "udp4"
+
+    @connectAddress  = address
+    @connectPort     = port
+    
+    @lport = 0
 
   intToByteArray: (number, width) ->
     bArray = []
@@ -48,14 +53,14 @@ class Packeteer extends EventEmitter
     for i in [0...data.length]
       byteArray.push data.charCodeAt(i)
 
-    log.debug "Sending " + command
+    @log.debug "Sending " + command
 
     prepped_data = new Buffer(byteArray)
-    outbound_socket.send(prepped_data, 0, prepped_data.length, connectPort, connectAddress)
+    @outbound_socket.send(prepped_data, 0, prepped_data.length, @connectPort, @connectAddress)
 
   listen: ->
 
-    inbound_socket.on("message", (msg) =>
+    @inbound_socket.on("message", (msg) =>
 
       sub_port    = this.bufToInt(msg.slice(0,4),4)
       seq_no      = this.bufToInt(msg.slice(4,8),4)
@@ -64,18 +69,20 @@ class Packeteer extends EventEmitter
       frag_no     = this.bufToInt(msg.slice(11,12),1)
       data        = (msg.slice(12))#.toString()
 
-      log.debug "Receiving " + command
+      @log.debug "Receiving " + command
 
       @emit "command", sub_port, seq_no, command, data, frag_count, frag_no
 
     )
+    console.log @connectAddress, @connectPort
+    console.log "binding on " + @outbound_socket.address() + ":" + @outbound_socket.address().port
 
-    inbound_socket.bind( outbound_socket.address().port )
-    inbound_socket.address().port
+    @inbound_socket.bind( @outbound_socket.address().port )
+    @inbound_socket.address().port
 
   close: ->
 
-    inbound_socket.close()
-    outbound_socket.close()
+    @inbound_socket.close()
+    @outbound_socket.close()
 
-exports.packeteer = new Packeteer
+exports.packeteer = Packeteer
