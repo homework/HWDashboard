@@ -12,6 +12,7 @@ class Packeteer extends EventEmitter
     @inbound_socket  = udp.createSocket "udp4"
     @outbound_socket = udp.createSocket "udp4"
 
+    console.log "Constructing " + address + ":" + port
     @connectAddress  = address
     @connectPort     = port
     

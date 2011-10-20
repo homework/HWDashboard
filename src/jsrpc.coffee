@@ -40,8 +40,8 @@ class JSRPC extends EventEmitter
     FACK_SENT         : 11,
     SEQNO_SENT        : 12,
 
-  constructor: (rs) ->
-    @pktr   = new Packeteer
+  constructor: (address, port) ->
+    @pktr   = new Packeteer(address, port)
     @defrag = new Defragger()
     @log    = new HWDashboardLogger "jsrpc", 7
    
@@ -68,6 +68,8 @@ class JSRPC extends EventEmitter
         if @defrag.getTotalLength() is 0 #Server did not get our RACK after last fragment, resend RACK
           @pktr.sendCommand(Command.RACK, "", sub_port, seq_no)
         else
+          @setState(RPCState.AWAITING_RESPONSE, 1)
+          @log.debug "Final fragment: " + frag_count + "/" + frag_no
           @defrag.push frag_count, data.slice(4)
           @pktr.emit "command", sub_port, seq_no, command, @defrag.getData(), 1, 1
           @defrag.reset()
@@ -100,7 +102,7 @@ class JSRPC extends EventEmitter
                   @log.debug "Pushed first fragment into Defragger from server"
 
                   @setState(RPCState.FACK_SENT, 1)
-                  @pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
+                  @pktr.sendCommand(Command.FACK, "", sub_port, @outboundSeqNo, frag_count, frag_no)
 
               else if @state is RPCState.FACK_SENT
 
@@ -109,7 +111,7 @@ class JSRPC extends EventEmitter
                   if (@defrag.push frag_count, data.slice(4)) is frag_count
                     @log.debug "Pushed new fragment into Defragger from server"
                     @setState(RPCState.FACK_SENT, 1)
-                    @pktr.sendCommand(Command.FACK, "", sub_port, outboundSeqNo, frag_count, frag_no)
+                    @pktr.sendCommand(Command.FACK, "", sub_port, @outboundSeqNo, frag_count, frag_no)
 
           else if sub_port is @inboundSubPort
 

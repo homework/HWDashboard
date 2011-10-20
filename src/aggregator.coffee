@@ -25,23 +25,35 @@ class Aggregator
 
     #Setup hourly cron job. Run before persistence check
     #Better to fail on a duplicate insert than miss the insert
-    cron('0 */2 * * * *', =>
+    cron('0 */1 * * * *', =>
 
       last_insert_check = @mysql.query('SELECT date,hour FROM bandwidth_hours ORDER BY date DESC, hour DESC LIMIT 1')
 
       last_insert_check.once 'row', (row) =>
 
-        date_last = new Date row.date.getUTCFullYear(), row.date.getUTCMonth(), row.date.getUTCDate()+1, row.hour+1
+        date_last = new Date(Date.UTC(
+                                row.date.getUTCFullYear(),
+                                row.date.getUTCMonth(),
+                                (row.date.getUTCDate()),
+                                row.hour
+                          )
+        )
 
         # Hours is 0-23, so we +1 but then -1 as we are looking for the previous hour
         date_now = new Date()
-        expected_last_date = new Date date_now.getUTCFullYear(), date_now.getUTCMonth(), date_now.getUTCDate(), date_now.getUTCHours()
+        expected_last_date = new Date(Date.UTC(
+                                        date_now.getUTCFullYear(),
+                                        date_now.getUTCMonth(),
+                                        date_now.getUTCDate(),
+                                        date_now.getUTCHours()
+                                    )
+        )
 
         console.log date_last.toUTCString(), expected_last_date.toUTCString()
         #Check for lost aggregate data
         if date_last < expected_last_date
           missing_hours = ((expected_last_date - date_last) / 1000) / 60 / 60
-          missing_hours--
+          console.log missing_hours
           @recursivePopulator(expected_last_date, missing_hours)
     )
 
@@ -62,7 +74,7 @@ class Aggregator
         for ip, bytes of result
           date_string = start_date.getUTCFullYear() + "/" +
                         (start_date.getUTCMonth()+1) + "/" +
-                        start_date.getUTCDate()
+                        (start_date.getUTCDate()+1)
           @mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
                       [date_string, start_date.getUTCHours(), ip, bytes],
                       (e) ->
@@ -73,7 +85,7 @@ class Aggregator
       else
         date_string = start_date.getUTCFullYear() + "/" +
                       (start_date.getUTCMonth()+1) + "/" +
-                      start_date.getUTCDate()
+                      (start_date.getUTCDate()+1)
         @mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
                     [date_string, start_date.getUTCHours(), "0.0.0.0", 0],
                     (e) ->
@@ -81,12 +93,12 @@ class Aggregator
                         return
         )
 
-      if (hour_count) > 0
+      if (hour_count-1) > 0
         #console.log "Ignored"
-        console.log "Recursive call"
         setTimeout( =>
+          console.log "Calling recursive with " + (hour_count-1)
           @recursivePopulator(end_date, hour_count-1)
-        ,5000)
+        ,10000)
     )
 
   destroy: () ->

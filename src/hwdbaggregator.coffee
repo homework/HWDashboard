@@ -7,7 +7,7 @@ class HWDBAggregator extends EventEmitter
   constructor: ->
 
     @hwdb_live = new JSRPC("127.0.0.1", 987)
-    @hwdb_historical = new JSRPC("127.0.0.1", 990)
+    @hwdb_historical = new JSRPC("127.0.0.1", 987)#Temporary
     @hwdb_live.connect()
     @hwdb_historical.connect()
     console.log "Double connect"
@@ -79,11 +79,21 @@ class HWDBAggregator extends EventEmitter
                   totals[ip] = (totals[ip] || 0) + bytes
               return totals
             )
+
         hour_result = historical_result if historical_result?
-        console.log historical_result, live_result
+
+        for ip,bytes of historical_result
+          live_result[ip] = (live_result[ip] || 0) + bytes
+
+        callback(live_result)
+
         #if live_result?
-        callback("empty")
-      @hwdb_live.query(query)
+        #callback("empty")
+
+      setTimeout( =>
+        console.log "Query LIVE: " + query
+        @hwdb_live.query(query)
+      , 3000)
 
     @hwdb_historical.query(query)
 

@@ -1,60 +1,51 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
-"""
-dashORM = require('./dashorm').dashorm
-dashORM.initialize()
+sio_app           = require('socket.io')
+express           = require('express')
+path              = require('path')
+
+DashORM           = require('./dashorm').dashorm
+HWDashboardLogger = require('./logger').logger
+JSRPC             = require('./jsrpc').jsrpc
+
+models = require('../public/scripts/models').models
+
+dashORM           = new DashORM
+log               = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
+hwdb_stream       = new JSRPC
+hwdb_query        = new JSRPC
+
 """
 Aggregator = require('./aggregator').aggregator
 @aggregator = new Aggregator
-
-process.on 'SIGINT', ->
-  aggregator.destroy()
-  setTimeout( ->
-    process.exit(0)
-  ,5000
-  )
 """
-HWDashboardLogger = require('./logger').logger
-log = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 
 log.notice "Starting HWDashboard"
-
-stream_jsrpc  = require('./jsrpc').jsrpc
-query_jsrpc   = require('./jsrpc').jsrpc
-sio_app       = require('socket.io')
-express       = require('express')
-
-models = require('../public/scripts/models').models
 
 rest_server = express.createServer()
 io_server = sio_app.listen(rest_server)
 
-
 rest_server.configure( ->
   rest_server.use express.static(__dirname + '/../public')
-  #rest_server.use(express.bodyParser())
   rest_server.set 'views', __dirname + '/../public/views'
 )
 
-dashboardModel = new models.DashboardModel()
-dashboardModel.populateTestData()
- 
 io_server.sockets.on "connection", (socket) ->
   
   socket.join('allowances')
   socket.on "cli", (d) ->
-    socket.emit "updateView", dashboardModel.monthlyallowances.get("10-2011").xport()
+    socket.emit "updateView", dashORM.query("allowances", "10-2011")
 
 # === Live Data ===
 package_timeout = 0
 package_data = []
 
-stream_jsrpc.connect()
-stream_jsrpc.query("SQL:subscribe BWStatsLast 127.0.0.1 ")
+hwdb_stream.connect()
+hwdb_stream.query("SQL:subscribe BWStatsLast 127.0.0.1 ")
 
-stream_jsrpc.on('message', (msg) ->
-  if msg isnt "Success"
+hwdb_stream.on('message', (msg) ->
+  if msg[0].rows isnt 0
     package_data.push pkg for pkg in msg
     if package_timeout then clearTimeout(package_timeout)
     package_timeout = setTimeout( ->
@@ -65,7 +56,7 @@ stream_jsrpc.on('message', (msg) ->
     console.log ("Added to package")
 )
 
-stream_jsrpc.on('timedout', ->
+hwdb_stream.on('timedout', ->
   log.error "JSRPC timed out, process exiting"
   process.exit(1)
 )
@@ -76,8 +67,10 @@ rest_server.get('/', (req,res) ->
 )
 
 rest_server.get('/:base', (req, res) ->
-  if req.params.base.indexOf(".") is -1
-    res.render(req.params.base+'.ejs')
+  path.exists('./public/views/'+req.params.base+'.ejs', (exists) ->
+    if req.params.base.indexOf(".") is -1 and exists
+      res.render(req.params.base+'.ejs')
+  )
 )
 
 rest_server.get('/:base/*?', (req, res) ->
@@ -85,7 +78,10 @@ rest_server.get('/:base/*?', (req, res) ->
   if req.xhr
     dashORM.query req.params.base, req.params[0].split("/"), res
   else if req.params.base.indexOf(".") is -1
-    res.render(req.params.base+'.ejs')
+    path.exists('./public/views/'+req.params.base+'.ejs', (exists) ->
+      if req.params.base.indexOf(".") is -1 and exists
+        res.render(req.params.base+'.ejs')
+    )
 )
 
 if !module.parent
@@ -94,9 +90,8 @@ if !module.parent
   )
   log.notice "Dashboard server listening on port " + DASHBOARD_PORT
   process.on 'SIGINT', ->
-    stream_jsrpc.disconnect()
-    stream_jsrpc.on 'disconnected', ->
+    hwdb_stream.disconnect()
+    hwdb_stream.on 'disconnected', ->
       log.notice "HWDashboard killed by SIGINT, exited gracefully"
       process.exit(0)
     process.exit(0)
-  """
