@@ -76,6 +76,10 @@ img::-moz-selection {background: transparent;}
 body {-webkit-tap-highlight-color: rgb(255,255,158);}
 
 
+@font-face {
+  font-family: "Tin Doghouse";
+  src: url('/fonts/TinDog.ttf');
+}
 
 /*    Default Layout: 992px. 
     Gutters: 24px.
@@ -88,7 +92,7 @@ px      68    160    252    344    436    528    620    712    804    896    */
 html { height: 100%; }
 
 body {
-  background: url('/linen-bg.jpg');
+  background: url('/images/linen-bg.jpg');
   height: 100%;
   color: white;
   width: 100%;
@@ -103,13 +107,13 @@ body {
   width: 100%;
   position:fixed;
   z-index: 10;
-  background: url('/linen-bg.jpg');
+  background: url('/images/linen-bg.jpg');
 }
 #notification_container { padding: 2px 0;text-align: center; }
 
 #title_bar {
   width: 100%;
-  background: url('/linen-header.jpg');
+  background: url('/images/linen-header.jpg');
   margin: 0 auto;
   padding: 0px;
   height: 63px;
@@ -159,7 +163,7 @@ a { text-decoration: none; color: white; }
 #sidebar {
   width: 296px;
   min-height: 100%;
-  background: url('/linen-side.jpg') repeat fixed;
+  background: url('/images/linen-side.jpg') repeat fixed;
   overflow: visible;
   float: left;
   margin: 0;
