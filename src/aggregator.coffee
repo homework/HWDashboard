@@ -4,32 +4,30 @@ MYSQL_USERNAME  = 'homework'
 MYSQL_PASSWORD  = 'whatever'
 MYSQL_DATABASE  = 'bandwidth_data'
 
-mysql_lib         = require('mysql')
-hwdb_aggregator   = require('./hwdbaggregator').hwdbaggregator
+mysqlLib         = require('mysql')
+HWDBAggregator   = require('./hwdbaggregator').hwdbaggregator
 cron              = require('cron').CronJob
 
 class Aggregator
 
-  mysql = null
+  constructor: ->
 
-  initialize: () ->
+    @hwdb_aggregator = new HWDBAggregator
 
-    hwdb_aggregator.initialize()
-
-    mysql = mysql_lib.createClient({
+    @mysql = mysqlLib.createClient({
       host:       MYSQL_HOST
       port:       MYSQL_PORT
       user:       MYSQL_USERNAME
       password:   MYSQL_PASSWORD
     })
 
-    mysql.useDatabase( MYSQL_DATABASE)
+    @mysql.useDatabase( MYSQL_DATABASE)
 
     #Setup hourly cron job. Run before persistence check
     #Better to fail on a duplicate insert than miss the insert
     cron('0 */2 * * * *', =>
 
-      last_insert_check = mysql.query('SELECT date,hour FROM bandwidth_hours ORDER BY date DESC, hour DESC LIMIT 1')
+      last_insert_check = @mysql.query('SELECT date,hour FROM bandwidth_hours ORDER BY date DESC, hour DESC LIMIT 1')
 
       last_insert_check.once 'row', (row) =>
 
@@ -58,14 +56,14 @@ class Aggregator
                           ))
  
     console.log "Start: " + start_date.toUTCString()
-    hwdb_aggregator.aggregateHour(start_date, (result) =>
+    @hwdb_aggregator.aggregateHour(start_date, (result) =>
       console.log result
       if result isnt "empty"
         for ip, bytes of result
           date_string = start_date.getUTCFullYear() + "/" +
                         (start_date.getUTCMonth()+1) + "/" +
                         start_date.getUTCDate()
-          mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
+          @mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
                       [date_string, start_date.getUTCHours(), ip, bytes],
                       (e) ->
                         if e and e.message.indexOf("Duplicate") isnt -1
@@ -76,7 +74,7 @@ class Aggregator
         date_string = start_date.getUTCFullYear() + "/" +
                       (start_date.getUTCMonth()+1) + "/" +
                       start_date.getUTCDate()
-        mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
+        @mysql.query("INSERT INTO bandwidth_hours (date,hour,ip,bytes) VALUES (?,?,?,?)",
                     [date_string, start_date.getUTCHours(), "0.0.0.0", 0],
                     (e) ->
                       if e and e.message.indexOf("Duplicate") isnt -1
@@ -92,6 +90,6 @@ class Aggregator
     )
 
   destroy: () ->
-    hwdb_aggregator.destroy()
+    @hwdb_aggregator.destroy()
 
-exports.aggregator = new Aggregator
+exports.aggregator = Aggregator

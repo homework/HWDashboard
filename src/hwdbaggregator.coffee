@@ -1,15 +1,15 @@
 EventEmitter = require('events').EventEmitter
 JSRPC = require('./jsrpc').jsrpc
-hwdb_live = new JSRPC("127.0.0.1", 987)
-hwdb_historical = new JSRPC("127.0.0.1", 990)
 __ = require('underscore')._
 
 class HWDBAggregator extends EventEmitter
 
-  initialize: () ->
+  constructor: ->
 
-    hwdb_live.connect()
-    hwdb_historical.connect()
+    @hwdb_live = new JSRPC("127.0.0.1", 987)
+    @hwdb_historical = new JSRPC("127.0.0.1", 990)
+    @hwdb_live.connect()
+    @hwdb_historical.connect()
     console.log "Double connect"
 
   leadingZero: (num) ->
@@ -48,7 +48,7 @@ class HWDBAggregator extends EventEmitter
     query +=  end_str + ")]"
 
     console.log "Querying: " + query
-    hwdb_historical.once 'message', (rows) =>
+    @hwdb_historical.once 'message', (rows) =>
 
       historical_result = 0
       live_result       = 0
@@ -66,7 +66,7 @@ class HWDBAggregator extends EventEmitter
             return totals
           )
 
-      hwdb_live.once 'message', (rows) =>
+      @hwdb_live.once 'message', (rows) =>
         if rows[0].status is "Success"
           if rows[0].rows > 0
             live_result = __(rows.slice(1)).map((row) ->
@@ -83,17 +83,17 @@ class HWDBAggregator extends EventEmitter
         console.log historical_result, live_result
         #if live_result?
         callback("empty")
-      hwdb_live.query(query)
+      @hwdb_live.query(query)
 
-    hwdb_historical.query(query)
+    @hwdb_historical.query(query)
 
   destroy: () ->
-    hwdb_live.disconnect()
-    hwdb_live.on 'disconnected', ->
+    @hwdb_live.disconnect()
+    @hwdb_live.on 'disconnected', ->
       console.log "Live DC"
-    hwdb_historical.disconnect()
-    hwdb_historical.on 'disconnected', ->
+    @hwdb_historical.disconnect()
+    @hwdb_historical.on 'disconnected', ->
       console.log "Historical DC"
       #log.notice "HWDBAggregator successfully disconnected"
 
-exports.hwdbaggregator = new HWDBAggregator
+exports.hwdbaggregator = HWDBAggregator

@@ -5,8 +5,8 @@ DASHBOARD_PORT  = 80
 dashORM = require('./dashorm').dashorm
 dashORM.initialize()
 """
-aggregator = require('./aggregator').aggregator
-aggregator.initialize()
+Aggregator = require('./aggregator').aggregator
+@aggregator = new Aggregator
 
 process.on 'SIGINT', ->
   aggregator.destroy()
