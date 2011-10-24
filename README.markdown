@@ -1,26 +1,19 @@
-Installation
-------------
+# Homework Dashboard
+## Installation
 
-Install Node.JS, npm, nodeunit(for nodeunit command line)
+See [node.sh](https://github.com/homework/HWDashboard/blob/master/node.sh)
+## Starting the dashboard
 
-then
-
-    npm install express log now coffee-script uglify-js
-
-#### Starting the server
-
-    node lib/dashboard.js
-
-Development 
------------
+    node lib/hwdashboard.js
+## Development 
 
 To autogenerate CoffeeScript as you write it, call
 
-    cake watch
+    coffee -w -c -o lib src
 
 for server development and
 
-    coffee -o public/scripts public_src
+    coffee -w -c -o public/scripts public_src
 
 for client development
 
