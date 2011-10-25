@@ -60,6 +60,7 @@ hwdb_stream.on('timedout', ->
   log.error "JSRPC timed out, process exiting"
   process.exit(1)
 )
+
 log.info "JSRPC setup executed"
 
 rest_server.get('/', (req,res) ->

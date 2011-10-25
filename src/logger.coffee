@@ -5,10 +5,8 @@ class HWDashboardLogger
   path = require('path')
 
   constructor: (@classlog, @loglevel) ->
-    path.exists(__dirname + '/logs', (exist) ->
-      if not exist
-        fs.mkdir(__dirname + '/logs', '0755')
-    )
+    if !(path.existsSync(__dirname + '/logs'))
+      fs.mkdir(__dirname + '/logs', '0755')
     
     return log = new Log @loglevel, fs.createWriteStream(__dirname + '/logs/' + @classlog + '.log')
 
