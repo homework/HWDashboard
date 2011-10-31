@@ -189,8 +189,8 @@ a { text-decoration: none; color: white; }
 }
 
 .dashboard_date {
-  font-size: 40px;
-  padding: 20px 0 30px 0;
+  font-size: 30px;
+  padding: 19px 0 20px 0;
   text-align: center;
   margin-bottom: 15px;
 }
@@ -238,6 +238,7 @@ a { text-decoration: none; color: white; }
   text-align: left;
   color: #3F3E39;
   position: relative;
+  width: 100%;
 }
 
 .dashboard_user {
@@ -263,24 +264,31 @@ a { text-decoration: none; color: white; }
   font-size: 40px;
 }
 
-.household_bar_border {
-  width: 420px;
+#household_bar_border {
+  width: 565px;
   border: 3px solid #3F3E39;
-  height: 19px;
+  height: 42px;
   float:left;
   margin: 10px 0;
-  padding: 3px;
+  padding: 0;
+  text-align: center;
+  font-size: 30px;
 }
 
-.household_bar {
+#household_bar {
   width: 0%;
   height: 100%;
   background: rgb(255,127,14);
+  font-size: 25px;
 }
 
 #household_bar_text {
-  margin: 10px 0;
+  position: absolute;
+  padding: 13px 10px 9px 10px;
+  height: 100%;
+  left: 365px;
 }
+
 
 .bar_text {
   float: left;

@@ -35,7 +35,8 @@
     initialize: function(args) {
       this.id = args.id;
       this.household = new models.Allowance({
-        id: "household"
+        id: "household",
+        usage: 0
       });
       this.users = new models.Allowances();
       this.devices = new models.Allowances();

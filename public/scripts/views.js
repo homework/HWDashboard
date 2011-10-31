@@ -19,7 +19,7 @@
       var id_date, js;
       this.model = new models.MonthlyAllowance().mport(m);
       id_date = this.model.id.split("-");
-      console.log(this.model.devices);
+      console.log(this.model);
       js = {
         month: id_date[1],
         year: id_date[0],

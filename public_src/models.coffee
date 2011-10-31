@@ -37,7 +37,7 @@ models.MonthlyAllowance = BB.Model.extend({
 
   initialize: (args) ->
     @id = args.id
-    @household  = new models.Allowance( { id: "household" } )
+    @household  = new models.Allowance( { id: "household", usage: 0 } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
     @lastUpdated = new Date().getTime()

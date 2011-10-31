@@ -4,12 +4,7 @@
         <div class="dashboard_date dashboard_left" style="border-bottom: 2px dashed white">
           <div style="float:left"><a href="#" id="prev"><</a></div>
           <div style="float:right"><a href="#" id="next">></a></div>
-          <div id="dashboard_date_month">{{getMonth month}}</div>
-        </div>
-      </div>
-      <div id="household_container_left" class="dashboard_row">
-        <div class="dashboard_header dashboard_left">
-          <img src="/images/home.png"/><div class="hw_sub_title">Household</div>
+          <div id="dashboard_date_month">{{getMonth month}} {{year}}</div>
         </div>
       </div>
       <div id="user_container_left" class="dashboard_row">
@@ -35,17 +30,10 @@
     </div>
   </div>
   <div id="dashboard_content">
-    <div class="dashboard_date dashboard_right" style="height:26px">
-    </div>
-    <div id="household_container_right" class="dashboard_header dashboard_right">
-      <div class="household_bar_border">                     
-        <div class="household_bar" style="width:{{usagePercentage household.usage household.allowance}}%">                          
-        </div>                                            
-      </div>
-      <div id="household_bar_text" class="bar_text">                           
-        <sup id="household_usage">{{toGigabytes household.usage}}</sup>                                  
-        /
-        <sub id="household_allowance">{{toGigabytes household.allowance}}GB</sub>
+    <div class="dashboard_right">
+      <div id="household_bar_border">
+        <div id="household_bar_text">{{toGigabytes household.usage}}/{{toGigabytes household.allowance}}GB</div>
+        <div id="household_bar" style="width:{{usagePercentage household.usage household.allowance}}%"></div>
       </div>
     </div>
     <div id="user_container_right">

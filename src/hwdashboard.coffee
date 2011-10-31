@@ -16,10 +16,8 @@ log               = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 hwdb_stream       = new JSRPC
 hwdb_query        = new JSRPC
 
-"""
 Aggregator = require('./aggregator').aggregator
 @aggregator = new Aggregator
-"""
 
 log.notice "Starting HWDashboard"
 
