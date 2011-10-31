@@ -47,6 +47,13 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
           @render data
         )
       )
+      
+      current_date = new Date()
+
+      if current_date.getUTCFullYear() is parseInt(id_date[0]) and (current_date.getUTCMonth()+1) is parseInt(id_date[1])
+        $j("#next").css('visibility', 'hidden')
+      else
+        $j("#next").css('visibility', 'visible')
     )
 })
 

@@ -28,7 +28,7 @@
         devices: this.model.devices.toJSON()
       };
       return $j.get("/views/allowances.ejs", __bind(function(data) {
-        var template;
+        var current_date, template;
         template = HBS.compile(data);
         $j("#dashboard").html(template(js));
         $j("#prev").bind('click', __bind(function() {
@@ -39,7 +39,7 @@
             return this.render(data);
           }, this));
         }, this));
-        return $j("#next").bind('click', __bind(function() {
+        $j("#next").bind('click', __bind(function() {
           var next_date;
           id_date = this.model.id.split("-");
           next_date = new Date(id_date[0], id_date[1]);
@@ -47,6 +47,12 @@
             return this.render(data);
           }, this));
         }, this));
+        current_date = new Date();
+        if (current_date.getUTCFullYear() === parseInt(id_date[0]) && (current_date.getUTCMonth() + 1) === parseInt(id_date[1])) {
+          return $j("#next").css('visibility', 'hidden');
+        } else {
+          return $j("#next").css('visibility', 'visible');
+        }
       }, this));
     }
   });

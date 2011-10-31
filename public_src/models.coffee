@@ -21,6 +21,8 @@ models.Allowance = BB.Model.extend({
   initialize: (args) ->
     if !args.usage
       @set { usage: 0 }
+    if !args.allowance
+      @set { allowance: -1 }
 
     console.log "Created " + args.id + " allowance"
 })

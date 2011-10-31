@@ -22,6 +22,11 @@
           usage: 0
         });
       }
+      if (!args.allowance) {
+        this.set({
+          allowance: -1
+        });
+      }
       return console.log("Created " + args.id + " allowance");
     }
   });

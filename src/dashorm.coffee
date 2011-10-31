@@ -4,35 +4,31 @@ MYSQL_USERNAME  = 'homework'
 MYSQL_PASSWORD  = 'whatever'
 MYSQL_DATABASE  = 'bandwidth_data'
 
-JSRPC = require('./jsrpc').jsrpc
-
 models       = require('../public/scripts/models').models
 mysqlLib     = require('mysql')
+
+HWState = require('./hwstate').hwstate
 
 class DashORM
   
   constructor: ->
 
-    @hwdb = new JSRPC("127.0.0.1", 987)
+    @stateC = new HWState
 
-    @hwdb.connect()
-    #once 'connected'
-    @dashboardModel = new models.DashboardModel()
-    #@dashboardModel.populateTestData()
- 
-    @mysql = mysqlLib.createClient({
-      host:       MYSQL_HOST
-      port:       MYSQL_PORT
-      user:       MYSQL_USERNAME
-      password:   MYSQL_PASSWORD
-    })
+    @stateC.on 'update', (s) =>
+      console.log "Got update"
+      @state = s
+      @dashboardModel = new models.DashboardModel()
+      #@dashboardModel.populateTestData()
+   
+      @mysql = mysqlLib.createClient({
+        host:       MYSQL_HOST
+        port:       MYSQL_PORT
+        user:       MYSQL_USERNAME
+        password:   MYSQL_PASSWORD
+      })
 
-    @mysql.useDatabase MYSQL_DATABASE
-
-    @ip_allowances    = {}
-    @user_allowances  = {}
-    @devices          = {}
-    @users            = {}
+      @mysql.useDatabase MYSQL_DATABASE
 
   query: (model, parameters, response=0) =>
 
@@ -56,107 +52,55 @@ class DashORM
 
           if (current_date - last_update) < 360000000
             console.log "Returned in-memory model"
-            if response then response.json @dashboardModel.monthlyallowances.get(month_str).xport() else return response.json @dashboardModel.monthlyallowances.get(month_str).xport()
-            return
+            if response
+              response.json @dashboardModel.monthlyallowances.get(month_str).xport()
+            else
+              return response.json @dashboardModel.monthlyallowances.get(month_str).xport()
 
         ma = new models.MonthlyAllowance(
               { id: month_str }
         )
 
-        @ip_usage = {}
-        
-        @hwdb.query("SQL:select * from DeviceNames")
-        @hwdb.once 'message', (device_rows) =>
+        month_totals = @mysql.query(
+          "SELECT ip, SUM(bytes) FROM bandwidth_hours WHERE date " +
+          "BETWEEN ? AND DATE_ADD(?, INTERVAL 1 MONTH) GROUP BY ip",
+          [date_string, date_string]
+        )
 
-          if device_rows[0].status is "Success" and device_rows[0].rows > 0
-            for device_row in device_rows.slice(1)
-              @devices[device_row.ip] = device_row.name
+        month_totals.on 'row', (mysql_row) =>
 
-          console.log "Collected device names "
+          if mysql_row.ip isnt '0.0.0.0'
 
-          setTimeout( =>
-            @hwdb.query("SQL:select * from Users")
-            @hwdb.once 'message', (hw_rows) =>
+            device = @state.devices.get(mysql_row.ip)
 
-              if hw_rows[0].status is "Success" and hw_rows[0].rows > 0
-                for hw_row in hw_rows.slice(1)
-                  @users[hw_row.ip] = hw_row.name
-
-              console.log "Collected user information."
-           
-              setTimeout( =>
-                @hwdb.once 'message', (hw_rows) =>
-
-                  if hw_rows[0].status is "Success" and hw_rows[0].rows > 0
-
-                    @ip_allowances    = {}
-                    @user_allowances  = {}
-
-                    for hw_row in hw_rows.slice(1)
-
-                      @ip_allowances[hw_row.ip] = parseInt(hw_row.allowance)
-
-                      if @users[hw_row.ip]?
-
-                        if @user_allowances[ @users[hw_row.ip] ]?
-                          @user_allowances[ @users[hw_row.ip] ] += parseInt(hw_row.allowance)
-                        else
-                          @user_allowances[ @users[hw_row.ip] ] = parseInt(hw_row.allowance)
-
-                  console.log "Collected allowances information."
-
-                  month_totals = @mysql.query(
-                    "SELECT ip, SUM(bytes) FROM bandwidth_hours WHERE date " +
-                    "BETWEEN ? AND DATE_ADD(?, INTERVAL 1 MONTH) GROUP BY ip",
-                    [date_string, date_string]
-                  )
-
-                  month_totals.on 'row', (mysql_row) =>
-
-                    if mysql_row.ip isnt '0.0.0.0'
-
-                      user = @users[mysql_row.ip]
-
-                      if @ip_allowances[mysql_row.ip]?
-                        ip_allowance = @ip_allowances[mysql_row.ip]
-                      else
-                        ip_allowance = -1
-
-                      ma.users.add(
-                        new models.Allowance(
-                          {
-                            id:         @users[mysql_row.ip]
-                            usage:      parseInt(mysql_row['SUM(bytes)'])
-                            allowance:  ip_allowance
-                          }
-                        )
-                      )
-
-                      ma.devices.add(
-                        new models.Allowance(
-                          {
-                            id:         (@devices[mysql_row.ip] || mysql_row.ip)
-                            usage:      parseInt(mysql_row['SUM(bytes)'])
-                            allowance:  parseInt(ip_allowance)
-                          }
-                        )
-                      )
-
-                      current_household_usage = ma.household.get("usage")
-
-                      ma.household.set(
-                        { usage: parseInt(current_household_usage) + parseInt(mysql_row['SUM(bytes)']) }
-                      )
-
-                  month_totals.on 'end', (result) =>
-
-                    ma.household.set({ allowance: @ip_allowances['HOME'] })
-
-                @hwdb.query("SQL:select * from Allowances")
-              ,2000
+            if device.has("user")
+              ma.users.add(
+                new models.Allowance(
+                  {
+                    id:         device.get("user")
+                    usage:      parseInt(mysql_row['SUM(bytes)'])
+                    allowance:  (device.get("allowance") || -1)
+                  }
+                )
               )
-          ,2000
-          )
+
+            ma.devices.add(
+              new models.Allowance(
+                {
+                  id:         mysql_row.ip
+                  usage:      parseInt(mysql_row['SUM(bytes)'])
+                  allowance:  (device.get("allowance") || -1)
+                }
+              )
+            )
+
+            current_household_usage = ma.household.get("usage")
+
+            ma.household.set(
+              { usage: parseInt(current_household_usage) + parseInt(mysql_row['SUM(bytes)']) }
+            )
+
+        ma.household.set({ allowance: @state.devices.get("HOME").get("allowance") })
 
         if this_month
           @dashboardModel.monthlyallowances.remove(month_str)
@@ -184,35 +128,36 @@ class DashORM
           { usage: hh_usage + parseInt(item.bytes) }
         )
 
-        user = @users[item.ipaddr]
+        device_state = @state.devices.get(item.ipaddr)
 
-        if user
-          user_model  = month_model.users.get(user)
+        if device_state.has("user")
+
+          user_model = month_model.users.get(user)
          
           if user_model
             user_model.set( { usage: parseInt(user_model.get("usage")) + parseInt(item.bytes) } )
           else
             user_total_usage = 0
+            user_total_allowance = 0
 
-            month_model.devices.each( (device) =>
-              if @users[device.id] is user
-                user_total_usage += device.get("usage")
+            month_model.devices.each( (mm_device) =>
+              if @state.devices[mm_device.id].get("user") is @state.devices[item.ipaddr].get("user")
+                console.log "Matched user"
+                user_total_usage += mm_device.get("usage")
+                user_total_allowance += mm_device.get("allowance")
             )
 
             month_model.users.add(
               new models.Allowance(
                 {
-                  id:         user
+                  id:         @state.devices[item.ipaddr].get("user")
                   usage:      user_total_usage
-                  allowance:  @user_allowances[user]
+                  allowance:  user_total_allowance
                 }
               )
             )
 
-        if month_model.devices.get(@devices[item.ipaddr])?
-          device = month_model.devices.get(@devices[item.ipaddr])
-        else
-          device = month_model.devices.get(item.ipaddr)
+        device = month_model.devices.get(item.ipaddr)
 
         if device
           device.set( { usage: parseInt(device.get("usage")) + parseInt(item.bytes) } )
@@ -220,9 +165,9 @@ class DashORM
           month_model.devices.add(
             new models.Allowance(
               {
-                id:         (@devices[item.ipaddr] || item.ipaddr)
-                usage:      parseInt(@ip_usage[item.ipaddr] || 0) + parseInt(item.bytes)
-                allowance:  parseInt(@ip_allowances[item.ipaddr])
+                id:         @state.devices[item.ipaddr]
+                usage:      parseInt(item.bytes)
+                allowance:  parseInt(@state.devices[item.ipaddr].get("allowance"))
               }
             )
           )

@@ -172,9 +172,9 @@ class JSRPC extends EventEmitter
 
                   @log.debug "CONNECT acknowledged"
 
+                  @connected = true
                   @setState(RPCState.IDLE, 1)
                   @emit 'connected'
-                  @connected = true
 
               when Command.QACK
 
