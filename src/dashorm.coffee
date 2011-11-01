@@ -74,15 +74,25 @@ class DashORM
             device = @state.devices.get(mysql_row.ip)
 
             if device.has("user")
-              ma.users.add(
-                new models.Allowance(
-                  {
-                    id:         device.get("user")
-                    usage:      parseInt(mysql_row['SUM(bytes)'])
-                    allowance:  (device.get("allowance") || -1)
-                  }
-                )
+              user_total_usage = parseInt(mysql_row['SUM(bytes)'])
+              user_total_allowance = 0
+
+              @state.devices.each( (mm_device) =>
+                if @state.devices.get(mm_device.id).get("user") is @state.devices.get(mysql_row.ip).get("user")
+                  console.log "Matched user"
+                  user_total_allowance += device.get("allowance")
               )
+
+              if not ma.users.get( device.get("user") )
+                ma.users.add(
+                  new models.Allowance(
+                    {
+                      id:         device.get("user")
+                      usage:      user_total_usage
+                      allowance:  (user_total_allowance || -1)
+                    }
+                  )
+                )
 
             ma.devices.add(
               new models.Allowance(
@@ -116,6 +126,8 @@ class DashORM
 
     for item in package
 
+      console.log "Got: " + item
+
       item_date = new Date( parseInt(item.timestamp) * 100 )
       item_str = item_date.getFullYear()+"-"+(item_date.getMonth()+1)
 
@@ -132,42 +144,57 @@ class DashORM
 
         if device_state.has("user")
 
+          user = device_state.get("user")
           user_model = month_model.users.get(user)
-         
+
+          console.log "IP in @state has user: " + user
+
+          user_total_usage = parseInt(item.bytes)
+          user_total_allowance = 0
+
+          month_model.devices.each( (mm_device) =>
+            if @state.devices.get(mm_device.id).get("user") is @state.devices.get(item.ipaddr).get("user")
+              console.log "Matched user"
+              user_total_usage += mm_device.get("usage")
+              user_total_allowance += device_state.get("allowance")
+            console.log device_state.get("allowance")
+          )
+
+          console.log "US: " + user_total_usage + ", AL: " + user_total_allowance
+        
           if user_model
-            user_model.set( { usage: parseInt(user_model.get("usage")) + parseInt(item.bytes) } )
-          else
-            user_total_usage = 0
-            user_total_allowance = 0
-
-            month_model.devices.each( (mm_device) =>
-              if @state.devices[mm_device.id].get("user") is @state.devices[item.ipaddr].get("user")
-                console.log "Matched user"
-                user_total_usage += mm_device.get("usage")
-                user_total_allowance += mm_device.get("allowance")
+            console.log "User model exists, setting"
+            user_model.set(
+              {
+                usage:      user_total_usage
+                allowance:  user_total_allowance
+              }
             )
-
+          else
+            console.log "No user model, adding"
             month_model.users.add(
               new models.Allowance(
                 {
-                  id:         @state.devices[item.ipaddr].get("user")
+                  id:         @state.devices.get(item.ipaddr).get("user")
                   usage:      user_total_usage
                   allowance:  user_total_allowance
                 }
               )
             )
 
-        device = month_model.devices.get(item.ipaddr)
+        mm_device = month_model.devices.get(item.ipaddr)
 
-        if device
-          device.set( { usage: parseInt(device.get("usage")) + parseInt(item.bytes) } )
+        device = @state.devices.get(item.ipaddr)
+
+        if mm_device
+          mm_device.set( { usage: parseInt(mm_device.get("usage")) + parseInt(item.bytes) } )
         else
           month_model.devices.add(
             new models.Allowance(
               {
-                id:         @state.devices[item.ipaddr]
+                id:         item.ipaddr
                 usage:      parseInt(item.bytes)
-                allowance:  parseInt(@state.devices[item.ipaddr].get("allowance"))
+                allowance:  (device.get("allowance") || -1)
               }
             )
           )

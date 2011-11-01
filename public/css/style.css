@@ -278,7 +278,7 @@ a { text-decoration: none; color: white; }
 #household_bar {
   width: 0%;
   height: 100%;
-  background: rgb(255,127,14);
+  background: url('/images/linen-side.jpg') repeat fixed;
   font-size: 25px;
 }
 
@@ -286,7 +286,7 @@ a { text-decoration: none; color: white; }
   position: absolute;
   padding: 13px 10px 9px 10px;
   height: 100%;
-  left: 365px;
+  left: 345px;
 }
 
 
@@ -309,7 +309,7 @@ a { text-decoration: none; color: white; }
 .user_bar {
   width: 0%;
   height: 100%;
-  background: rgb(255,127,14);
+  background: url('/images/linen-side.jpg') repeat fixed;
 }
 
 .user_text {
@@ -330,7 +330,7 @@ a { text-decoration: none; color: white; }
 .device_bar {
   width: 0%;
   height: 100%;
-  background: rgb(255,127,14);
+  background: url('/images/linen-side.jpg') repeat fixed;
 }
 
 .device_text {

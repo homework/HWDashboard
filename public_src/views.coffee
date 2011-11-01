@@ -47,7 +47,7 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
           @render data
         )
       )
-      
+
       current_date = new Date()
 
       if current_date.getUTCFullYear() is parseInt(id_date[0]) and (current_date.getUTCMonth()+1) is parseInt(id_date[1])
@@ -71,12 +71,24 @@ HBS.registerHelper("toGigabytes", (bytes) ->
   return (if gb isnt "NaN" then gb else "XX.XX")
 )
 
+HBS.registerHelper("toGigabytesAllowance", (bytes) ->
+  gb = (Math.round(bytes/1073741824*100000)/100000).toFixed(2)
+  return (if gb isnt "NaN" then (if gb isnt -1 then (gb+"GB") else "Unlimited") else "XX.XX")
+)
+
+HBS.registerHelper("limitStyling", (usage, allowance) ->
+  console.log usage, allowance
+  if (usage isnt "NaN" and usage >= 0) and (allowance isnt "NaN" and allowance >= 0)
+    if usage >= allowance
+      return "color:#d00000"
+)
+
 HBS.registerHelper("usagePercentage", (usage, allowance) ->
   percent = (usage / allowance) * 100
-  if percent > 100
-    return 100
+  if percent >= 100
+    return "100%;background:url('/images/linen-red.jpg') repeat fixed;"
   else
-    return (if percent isnt "NaN" then percent else "XX.XX")
+    return (if percent isnt "NaN" then percent else "0")
 )
 
 HBS.registerHelper("getMonth", (month_no) ->

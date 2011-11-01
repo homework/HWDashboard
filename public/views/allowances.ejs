@@ -32,7 +32,7 @@
   <div id="dashboard_content">
     <div class="dashboard_right">
       <div id="household_bar_border">
-        <div id="household_bar_text">{{toGigabytes household.usage}}/{{toGigabytes household.allowance}}GB</div>
+        <div id="household_bar_text">{{toGigabytes household.usage}}/{{toGigabytesAllowance household.allowance}}</div>
         <div id="household_bar" style="width:{{usagePercentage household.usage household.allowance}}%"></div>
       </div>
     </div>
@@ -45,9 +45,9 @@
             </div>                                            
           </div>
           <div class="bar_text">                           
-            <sup>{{toGigabytes this.usage}}</sup>                                  
+            <sup style="{{limitStyling this.usage this.allowance}}">{{toGigabytes this.usage}}</sup>                                  
             /
-            <sub>{{toGigabytes this.allowance}}GB</sub> 
+            <sub>{{toGigabytesAllowance this.allowance}}</sub> 
           </div>
         </div>
         {{/each}}
@@ -61,9 +61,9 @@
             </div>                                            
           </div>
           <div class="bar_text">                           
-            <sup>{{toGigabytes this.usage}}</sup>                                  
+            <sup style="{{limitStyling this.usage this.allowance}}">{{toGigabytes this.usage}}</sup>                                  
             /
-            <sub>{{toGigabytes this.allowance}}GB</sub> 
+            <sub>{{toGigabytesAllowance this.allowance}}</sub> 
           </div>
         </div>
         {{/each}}

@@ -71,16 +71,37 @@
       return "XX.XX";
     }
   });
+  HBS.registerHelper("toGigabytesAllowance", function(bytes) {
+    var gb;
+    gb = (Math.round(bytes / 1073741824 * 100000) / 100000).toFixed(2);
+    if (gb !== "NaN") {
+      if (gb !== -1) {
+        return gb + "GB";
+      } else {
+        return "Unlimited";
+      }
+    } else {
+      return "XX.XX";
+    }
+  });
+  HBS.registerHelper("limitStyling", function(usage, allowance) {
+    console.log(usage, allowance);
+    if ((usage !== "NaN" && usage >= 0) && (allowance !== "NaN" && allowance >= 0)) {
+      if (usage >= allowance) {
+        return "color:#d00000";
+      }
+    }
+  });
   HBS.registerHelper("usagePercentage", function(usage, allowance) {
     var percent;
     percent = (usage / allowance) * 100;
-    if (percent > 100) {
-      return 100;
+    if (percent >= 100) {
+      return "100%;background:url('/images/linen-red.jpg') repeat fixed;";
     } else {
       if (percent !== "NaN") {
         return percent;
       } else {
-        return "XX.XX";
+        return "0";
       }
     }
   });

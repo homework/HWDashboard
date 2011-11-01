@@ -30,9 +30,11 @@ class HWState extends EventEmitter
       setTimeout( =>
         @updateUsers( =>
           console.log "users"
+          console.log "TT " + @state.devices.get("1.1.1.7").has("user")
           setTimeout( =>
             @updateAllowances( =>
               console.log "allowances"
+              console.log @state.devices.get("1.1.1.7").has("user")
               @emit 'update', @state
             )
           ,2000)
@@ -41,7 +43,6 @@ class HWState extends EventEmitter
     )
 
   updateDeviceNames: (callback) ->
-
     
     @hwdb.once 'message', (device_rows) =>
 
@@ -66,17 +67,18 @@ class HWState extends EventEmitter
     @hwdb.query("SQL:select * from DeviceNames")
 
   updateUsers: (callback) ->
-    console.log "in users"
 
     @hwdb.once 'message', (user_rows) =>
-      console.log "UMS"
 
       if user_rows[0].status is "Success" and user_rows[0].rows > 0
         for user_row in user_rows.slice(1)
 
-          if @state.devices[user_row.ip]?
-            @state.devices[user_row.ip].set({ user: user_row.name })
+          if @state.devices.get(user_row.ip)?
+            console.log "Device exists"
+            @state.devices.get(user_row.ip).set({ user: user_row.name })
+            console.log user_row.ip, @state.devices.get(user_row.ip).has("user")
           else
+            console.log "Device does not exist, adding"
             @state.devices.add(
               new models.Allowance(
                 {
@@ -97,9 +99,13 @@ class HWState extends EventEmitter
       if allowance_rows[0].status is "Success" and allowance_rows[0].rows > 0
         for allowance_row in allowance_rows.slice(1)
 
-          if @state.devices[allowance_row.ip]?
-            @state.devices[allowance_row.ip].set({ allowance: parseInt(allowance_row.allowance) })
+          console.log "Allowance IP: " + allowance_row.ip
+
+          if @state.devices.get(allowance_row.ip)?
+            console.log "Setting"
+            @state.devices.get(allowance_row.ip).set({ allowance: parseInt(allowance_row.allowance) })
           else
+            console.log "Adding"
             @state.devices.add(
               new models.Allowance(
                 {
