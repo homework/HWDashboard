@@ -55,7 +55,7 @@ class DashORM
             if response
               response.json @dashboardModel.monthlyallowances.get(month_str).xport()
             else
-              return response.json @dashboardModel.monthlyallowances.get(month_str).xport()
+              return @dashboardModel.monthlyallowances.get(month_str).xport()
 
         ma = new models.MonthlyAllowance(
               { id: month_str }
