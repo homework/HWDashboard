@@ -7,10 +7,10 @@ models = require('../public/scripts/models').models
 
 class HWState extends EventEmitter
 
-  constructor: ->
+  constructor: (callback) ->
 
     @state = new models.MonthlyAllowance(
-              { id: "state" }
+              { id: "STATE" }
     )
 
     @hwdb = new JSRPC("127.0.0.1", 987)
@@ -18,12 +18,12 @@ class HWState extends EventEmitter
     @hwdb.connect()
 
     @hwdb.once 'connected', =>
-      @updateState()
+      @updateState(callback)
 
   getState: ->
     @state
 
-  updateState: ->
+  updateState: (callback) ->
 
     @updateDeviceNames( =>
       console.log "devices"
@@ -40,6 +40,7 @@ class HWState extends EventEmitter
           ,2000)
           )
       ,2000)
+      callback(@state)
     )
 
   updateDeviceNames: (callback) ->

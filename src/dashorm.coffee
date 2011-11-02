@@ -13,22 +13,20 @@ class DashORM
   
   constructor: ->
 
-    @stateC = new HWState
+    @dashboardModel = new models.DashboardModel()
+    
+    @mysql = mysqlLib.createClient({
+      host:       MYSQL_HOST
+      port:       MYSQL_PORT
+      user:       MYSQL_USERNAME
+      password:   MYSQL_PASSWORD
+    })
 
-    @stateC.on 'update', (s) =>
-      console.log "Got update"
-      @state = s
-      @dashboardModel = new models.DashboardModel()
-      #@dashboardModel.populateTestData()
-   
-      @mysql = mysqlLib.createClient({
-        host:       MYSQL_HOST
-        port:       MYSQL_PORT
-        user:       MYSQL_USERNAME
-        password:   MYSQL_PASSWORD
-      })
-
-      @mysql.useDatabase MYSQL_DATABASE
+    @mysql.useDatabase MYSQL_DATABASE
+ 
+    @state_collector = new HWState( (state) =>
+      @dashboardModel.monthlyallowances.add(state)
+    )
 
   query: (model, parameters, response=0) =>
 
@@ -48,18 +46,14 @@ class DashORM
         #Return in memory allowance for current month
         if this_month and @dashboardModel.monthlyallowances.get(month_str) isnt undefined
 
-          last_update  = @dashboardModel.monthlyallowances.get(month_str).lastUpdated
+          if response
+            response.json @dashboardModel.monthlyallowances.get(month_str).xport()
+          else
+            return @dashboardModel.monthlyallowances.get(month_str).xport()
 
-          if (current_date - last_update) < 360000000
-            console.log "Returned in-memory model"
-            if response
-              response.json @dashboardModel.monthlyallowances.get(month_str).xport()
-            else
-              return @dashboardModel.monthlyallowances.get(month_str).xport()
+        month_model = @dashboardModel.monthlyallowances.get("STATE").clone()
 
-        ma = new models.MonthlyAllowance(
-              { id: month_str }
-        )
+        month_model.set( { id: month_str } )
 
         month_totals = @mysql.query(
           "SELECT ip, SUM(bytes) FROM bandwidth_hours WHERE date " +
@@ -69,54 +63,34 @@ class DashORM
 
         month_totals.on 'row', (mysql_row) =>
 
+          console.log mysql_row
+
           if mysql_row.ip isnt '0.0.0.0'
 
-            device = @state.devices.get(mysql_row.ip)
+            device = month_model.devices.get mysql_row.ip
 
-            if device.has("user")
+            if device? and device.has("user")
+
               user_total_usage = parseInt(mysql_row['SUM(bytes)'])
-              user_total_allowance = 0
+              username = device.get("user")
 
-              @state.devices.each( (mm_device) =>
-                if @state.devices.get(mm_device.id).get("user") is @state.devices.get(mysql_row.ip).get("user")
-                  console.log "Matched user"
-                  user_total_allowance += device.get("allowance")
-              )
+              if not month_model.users.get username
+                month_model.updateUser username, parseInt(mysql_row['SUM(bytes)'])
 
-              if not ma.users.get( device.get("user") )
-                ma.users.add(
-                  new models.Allowance(
-                    {
-                      id:         device.get("user")
-                      usage:      user_total_usage
-                      allowance:  (user_total_allowance || -1)
-                    }
-                  )
-                )
+            if username?
+              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)']), device.get("allowances"), username
+            else if device?
+              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)']), device.get("allowances")
+            else
+              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)'])
 
-            ma.devices.add(
-              new models.Allowance(
-                {
-                  id:         mysql_row.ip
-                  usage:      parseInt(mysql_row['SUM(bytes)'])
-                  allowance:  (device.get("allowance") || -1)
-                }
-              )
-            )
-
-            current_household_usage = ma.household.get("usage")
-
-            ma.household.set(
-              { usage: parseInt(current_household_usage) + parseInt(mysql_row['SUM(bytes)']) }
-            )
-
-        ma.household.set({ allowance: @state.devices.get("HOME").get("allowance") })
+            month_model.updateHousehold mysql_row['SUM(bytes)']
 
         if this_month
           @dashboardModel.monthlyallowances.remove(month_str)
-          @dashboardModel.monthlyallowances.add(ma)
+          @dashboardModel.monthlyallowances.add(month_model)
 
-        if response then response.json ma.xport() else return ma.xport()
+        if response then response.json month_model.xport() else return month_model.xport()
            
       when "usage"
         console.log "No usage ORM"
@@ -124,85 +98,35 @@ class DashORM
 
   liveUpdate: (package) ->
 
-    for item in package
+    item_str = ""
 
-      console.log "Got: " + item
+    console.log @dashboardModel.monthlyallowances.pluck("id")
+
+    for item in package
 
       item_date = new Date( parseInt(item.timestamp) * 100 )
       item_str = item_date.getFullYear()+"-"+(item_date.getMonth()+1)
 
-      month_model = @dashboardModel.monthlyallowances.get(item_str)
+      current_month = @dashboardModel.monthlyallowances.get(item_str)
 
-      if month_model isnt undefined
+      if current_month is undefined
+        current_month = @dashboardModel.monthlyallowances.get("STATE").clone()
+        current_month.set { id: item_str }
 
-        hh_usage = month_model.household.get("usage")
-        month_model.household.set(
-          { usage: hh_usage + parseInt(item.bytes) }
-        )
+      current_month.updateHousehold item.bytes
 
-        device_state = @state.devices.get(item.ipaddr)
+      console.log item
 
-        if device_state.has("user")
+      current_month.updateDevice item.ipaddr, item.bytes
 
-          user = device_state.get("user")
-          user_model = month_model.users.get(user)
+      if current_month.devices.get(item.ipaddr).has("user")
+        current_month.updateUser device_state.get("user"), item.bytes
 
-          console.log "IP in @state has user: " + user
+      if not @dashboardModel.monthlyallowances.get(item_str)
+        @dashboardModel.monthlyallowances.add(current_month)
 
-          user_total_usage = parseInt(item.bytes)
-          user_total_allowance = 0
+    console.log item_str
 
-          month_model.devices.each( (mm_device) =>
-            if @state.devices.get(mm_device.id).get("user") is @state.devices.get(item.ipaddr).get("user")
-              console.log "Matched user"
-              user_total_usage += mm_device.get("usage")
-              user_total_allowance += device_state.get("allowance")
-            console.log device_state.get("allowance")
-          )
-
-          console.log "US: " + user_total_usage + ", AL: " + user_total_allowance
-        
-          if user_model
-            console.log "User model exists, setting"
-            user_model.set(
-              {
-                usage:      user_total_usage
-                allowance:  user_total_allowance
-              }
-            )
-          else
-            console.log "No user model, adding"
-            month_model.users.add(
-              new models.Allowance(
-                {
-                  id:         @state.devices.get(item.ipaddr).get("user")
-                  usage:      user_total_usage
-                  allowance:  user_total_allowance
-                }
-              )
-            )
-
-        mm_device = month_model.devices.get(item.ipaddr)
-
-        device = @state.devices.get(item.ipaddr)
-
-        if mm_device
-          mm_device.set( { usage: parseInt(mm_device.get("usage")) + parseInt(item.bytes) } )
-        else
-          month_model.devices.add(
-            new models.Allowance(
-              {
-                id:         item.ipaddr
-                usage:      parseInt(item.bytes)
-                allowance:  (device.get("allowance") || -1)
-              }
-            )
-          )
-
-    if month_model isnt undefined
-      return @dashboardModel.monthlyallowances.get(item_str).xport()
+    return @dashboardModel.monthlyallowances.get(item_str).xport()
   
-  updateORMState: () ->
-
-
 exports.dashorm = DashORM

@@ -17,16 +17,12 @@
   });
   models.Allowance = BB.Model.extend({
     initialize: function(args) {
-      if (!args.usage) {
-        this.set({
-          usage: 0
-        });
-      }
-      if (!args.allowance) {
-        this.set({
+      ({
+        defaults: {
+          usage: 0,
           allowance: -1
-        });
-      }
+        }
+      });
       return console.log("Created " + args.id + " allowance");
     }
   });
@@ -44,8 +40,88 @@
         usage: 0
       });
       this.users = new models.Allowances();
-      this.devices = new models.Allowances();
-      return this.lastUpdated = new Date().getTime();
+      return this.devices = new models.Allowances();
+    },
+    updateHousehold: function(usage, allowance) {
+      var new_usage;
+      if (usage == null) {
+        usage = 0;
+      }
+      if (allowance == null) {
+        allowance = 0;
+      }
+      usage = parseInt(usage);
+      allowance = parseInt(allowance);
+      new_usage = parseInt(this.household.get("usage") || 0) + usage;
+      return this.household.set({
+        usage: new_usage,
+        allowance: allowance
+      });
+    },
+    updateDevice: function(ip, usage, allowance, user) {
+      var device_data, new_usage;
+      if (usage == null) {
+        usage = 0;
+      }
+      if (allowance == null) {
+        allowance = 0;
+      }
+      if (user == null) {
+        user = void 0;
+      }
+      usage = parseInt(usage);
+      allowance = parseInt(allowance);
+      console.log("Adding device " + ip + ", usage: " + usage + ", allowance: " + allowance + ", user: " + user);
+      new_usage = (parseInt(this.devices.get(ip) ? this.devices.get(ip).get("usage") : false) || 0) + usage;
+      device_data = {
+        id: ip,
+        usage: new_usage,
+        allowance: allowance
+      };
+      if (user != null) {
+        device_data['user'] = user;
+      }
+      if (this.devices.get(ip) != null) {
+        console.log("Device exists, setting");
+        this.devices.get(ip).set(device_data);
+        if (user != null) {
+          this.updateUser(user, usage);
+        }
+      } else {
+        console.log("Device doesn't exist, creating");
+        this.devices.add(new models.Allowance(device_data));
+        console.log(this.devices.get(ip));
+        if (user != null) {
+          this.updateUser(user, usage, allowance);
+        }
+      }
+      return this.updateHousehold(usage);
+    },
+    updateUser: function(name, usage, allowance) {
+      var new_allowance, new_usage, user_data;
+      if (usage == null) {
+        usage = 0;
+      }
+      if (allowance == null) {
+        allowance = 0;
+      }
+      usage = parseInt(usage);
+      allowance = parseInt(allowance);
+      console.log("Adding user " + name + ", usage: " + usage + ", allowance: " + allowance);
+      new_usage = parseInt(this.users.get(name).get("usage") || 0) + usage;
+      new_allowance = parseInt(this.users.get(name).get("allowance") || 0) + allowance;
+      user_data = {
+        id: name,
+        usage: new_usage,
+        allowance: new_allowance
+      };
+      if (this.users.get(name) != null) {
+        console.log("User exists, setting");
+        return this.users.get(name).set(user_data);
+      } else {
+        console.log("User doesn't exist, creating");
+        return this.users.add(new models.Allowance(user_data));
+      }
     }
   });
   models.MonthlyAllowances = BB.Collection.extend({

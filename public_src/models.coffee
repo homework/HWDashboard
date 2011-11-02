@@ -19,10 +19,11 @@ models.Device = BB.Model.extend({
 models.Allowance = BB.Model.extend({
   
   initialize: (args) ->
-    if !args.usage
-      @set { usage: 0 }
-    if !args.allowance
-      @set { allowance: -1 }
+
+    defaults: {
+      usage:      0
+      allowance:  -1
+    }
 
     console.log "Created " + args.id + " allowance"
 })
@@ -42,7 +43,80 @@ models.MonthlyAllowance = BB.Model.extend({
     @household  = new models.Allowance( { id: "household", usage: 0 } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
-    @lastUpdated = new Date().getTime()
+
+  # (usage)                 -> Increment usage
+  # (usage || 0, allowance) -> Set allowance
+  updateHousehold: (usage=0, allowance=0) ->
+
+    usage     = parseInt(usage)
+    allowance = parseInt(allowance)
+
+    new_usage = parseInt(@household.get("usage") || 0) + usage
+
+    @household.set { usage: new_usage, allowance: allowance }
+
+  # (ip, usage)                             -> Increment usage
+  # (ip, usage || 0, allowance)             -> Set allowance
+  # (ip, usage || 0, allowance || 0, user)  -> Set name of user
+  updateDevice: (ip, usage=0, allowance=0, user=undefined) ->
+
+    usage     = parseInt(usage)
+    allowance = parseInt(allowance)
+
+    console.log "Adding device " + ip + ", usage: " + usage + ", allowance: "  + allowance + ", user: " + user
+
+    new_usage = ( parseInt(if @devices.get(ip) then @devices.get(ip).get("usage") else false) || 0) + usage
+
+    device_data = {
+                    id:         ip
+                    usage:      new_usage
+                    allowance:  allowance
+                  }
+
+    if user?
+      device_data['user'] = user
+
+    if @devices.get(ip)?
+      console.log "Device exists, setting"
+      @devices.get(ip).set device_data
+      if user? then @updateUser(user, usage)
+    else
+      console.log "Device doesn't exist, creating"
+      @devices.add( new models.Allowance device_data )
+      console.log @devices.get ip
+      if user? then @updateUser(user, usage, allowance)
+
+    @updateHousehold usage
+
+  # NOTE: Incrementing usage should ONLY be called from within updateDevice
+  #       All external calls should pass a value of 0
+  #       Failure to follow this standard will cause inconsistencies across 
+  #       user and household usage data
+  #
+  # (name, usage)                 -> Increment usage
+  # (name, usage || 0, allowance) -> Increment usage and allowance
+  updateUser: (name, usage=0, allowance=0) ->
+
+    usage     = parseInt(usage)
+    allowance = parseInt(allowance)
+
+    console.log "Adding user " + name + ", usage: " + usage + ", allowance: " + allowance
+
+    new_usage     = parseInt(@users.get(name).get("usage") || 0) + usage
+    new_allowance = parseInt(@users.get(name).get("allowance") || 0) + allowance
+
+    user_data = {
+                  id:         name
+                  usage:      new_usage
+                  allowance:  new_allowance
+                }
+
+    if @users.get(name)?
+      console.log "User exists, setting"
+      @users.get(name).set user_data
+    else
+      console.log "User doesn't exist, creating"
+      @users.add( new models.Allowance user_data )
 
 })
 

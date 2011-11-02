@@ -44,7 +44,7 @@ hwdb_stream.query("SQL:subscribe BWStatsLast 127.0.0.1 ")
 
 hwdb_stream.on('message', (msg) ->
   if msg[0].rows isnt 0
-    package_data.push pkg for pkg in msg
+    package_data.push pkg for pkg in msg.slice(1)
     if package_timeout then clearTimeout(package_timeout)
     package_timeout = setTimeout( ->
       io_server.sockets.in('allowances').emit 'updateView', dashORM.liveUpdate(package_data)
