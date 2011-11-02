@@ -110,4 +110,11 @@
     months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     return months[month_no - 1];
   });
+  HBS.registerHelper("deviceIdentifier", function(device) {
+    if (device.name != null) {
+      return device.name;
+    } else {
+      return device.id;
+    }
+  });
 }).call(this);

@@ -43,7 +43,7 @@
       return this.devices = new models.Allowances();
     },
     updateHousehold: function(usage, allowance) {
-      var new_usage;
+      var current_usage, household_data, total_usage;
       if (usage == null) {
         usage = 0;
       }
@@ -52,48 +52,56 @@
       }
       usage = parseInt(usage);
       allowance = parseInt(allowance);
-      new_usage = parseInt(this.household.get("usage") || 0) + usage;
-      return this.household.set({
-        usage: new_usage,
-        allowance: allowance
-      });
+      current_usage = parseInt(this.household.get("usage"));
+      total_usage = current_usage + usage;
+      household_data = {
+        usage: total_usage
+      };
+      if (allowance > 0) {
+        household_data['allowance'] = allowance;
+      }
+      return this.household.set(household_data);
     },
-    updateDevice: function(ip, usage, allowance, user) {
-      var device_data, new_usage;
+    updateDevice: function(ip, usage, allowance, name, user) {
+      var device_data, device_exists, new_usage;
       if (usage == null) {
         usage = 0;
       }
       if (allowance == null) {
         allowance = 0;
+      }
+      if (name == null) {
+        name = void 0;
       }
       if (user == null) {
         user = void 0;
       }
       usage = parseInt(usage);
       allowance = parseInt(allowance);
-      console.log("Adding device " + ip + ", usage: " + usage + ", allowance: " + allowance + ", user: " + user);
-      new_usage = (parseInt(this.devices.get(ip) ? this.devices.get(ip).get("usage") : false) || 0) + usage;
+      device_exists = this.devices.get(ip) != null;
+      new_usage = parseInt((device_exists ? this.devices.get(ip).get("usage") : false) || 0) + usage;
       device_data = {
         id: ip,
-        usage: new_usage,
-        allowance: allowance
+        usage: new_usage
       };
+      if (allowance > 0) {
+        device_data['allowance'] = allowance;
+      }
+      if (name != null) {
+        device_data['name'] = name;
+      }
       if (user != null) {
         device_data['user'] = user;
+      } else {
+        user = device_exists ? this.devices.get(ip).get("user") || void 0 : void 0;
       }
       if (this.devices.get(ip) != null) {
-        console.log("Device exists, setting");
         this.devices.get(ip).set(device_data);
-        if (user != null) {
-          this.updateUser(user, usage);
-        }
       } else {
-        console.log("Device doesn't exist, creating");
         this.devices.add(new models.Allowance(device_data));
-        console.log(this.devices.get(ip));
-        if (user != null) {
-          this.updateUser(user, usage, allowance);
-        }
+      }
+      if (user != null) {
+        this.updateUser(user, usage, allowance);
       }
       return this.updateHousehold(usage);
     },
@@ -107,19 +115,18 @@
       }
       usage = parseInt(usage);
       allowance = parseInt(allowance);
-      console.log("Adding user " + name + ", usage: " + usage + ", allowance: " + allowance);
-      new_usage = parseInt(this.users.get(name).get("usage") || 0) + usage;
-      new_allowance = parseInt(this.users.get(name).get("allowance") || 0) + allowance;
+      new_usage = parseInt((this.users.get(name) ? this.users.get(name).get("usage") : false) || 0) + usage;
+      new_allowance = parseInt((this.users.get(name) ? this.users.get(name).get("allowance") : false) || 0) + allowance;
       user_data = {
         id: name,
-        usage: new_usage,
-        allowance: new_allowance
+        usage: new_usage
       };
+      if (allowance > 0) {
+        user_data['allowance'] = new_allowance;
+      }
       if (this.users.get(name) != null) {
-        console.log("User exists, setting");
         return this.users.get(name).set(user_data);
       } else {
-        console.log("User doesn't exist, creating");
         return this.users.add(new models.Allowance(user_data));
       }
     }

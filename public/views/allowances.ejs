@@ -23,7 +23,9 @@
         </div>
         {{#each devices}}
           <div class="dashboard_user dashboard_left">
-            <div class="dashboard_user_text">{{this.id}}</div>
+            <div class="dashboard_user_text">
+            {{deviceIdentifier this}}
+            </div>
           </div>  
         {{/each}}
       </div>

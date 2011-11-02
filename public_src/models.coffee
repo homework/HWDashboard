@@ -51,40 +51,50 @@ models.MonthlyAllowance = BB.Model.extend({
     usage     = parseInt(usage)
     allowance = parseInt(allowance)
 
-    new_usage = parseInt(@household.get("usage") || 0) + usage
+    current_usage = parseInt(@household.get("usage"))
+    total_usage   = current_usage + usage
 
-    @household.set { usage: new_usage, allowance: allowance }
+    household_data = { usage: total_usage }
+
+    if allowance > 0
+      household_data['allowance'] = allowance
+
+    @household.set household_data
 
   # (ip, usage)                             -> Increment usage
   # (ip, usage || 0, allowance)             -> Set allowance
-  # (ip, usage || 0, allowance || 0, user)  -> Set name of user
-  updateDevice: (ip, usage=0, allowance=0, user=undefined) ->
+  # (ip, usage || 0, allowance || 0, name)  -> Set name of user
+  # (ip, usage || 0, allowance || 0, name, user)  -> Set name of user
+  updateDevice: (ip, usage=0, allowance=0, name=undefined, user=undefined) ->
 
     usage     = parseInt(usage)
     allowance = parseInt(allowance)
 
-    console.log "Adding device " + ip + ", usage: " + usage + ", allowance: "  + allowance + ", user: " + user
+    device_exists = @devices.get(ip)?
 
-    new_usage = ( parseInt(if @devices.get(ip) then @devices.get(ip).get("usage") else false) || 0) + usage
+    new_usage = parseInt( (if device_exists then @devices.get(ip).get("usage") else false) || 0) + usage
 
     device_data = {
                     id:         ip
                     usage:      new_usage
-                    allowance:  allowance
                   }
 
+    if allowance > 0
+      device_data['allowance'] = allowance
+
+    if name?
+      device_data['name'] = name
     if user?
       device_data['user'] = user
+    else
+      user = if device_exists then (@devices.get(ip).get("user") || undefined)
 
     if @devices.get(ip)?
-      console.log "Device exists, setting"
       @devices.get(ip).set device_data
-      if user? then @updateUser(user, usage)
     else
-      console.log "Device doesn't exist, creating"
       @devices.add( new models.Allowance device_data )
-      console.log @devices.get ip
-      if user? then @updateUser(user, usage, allowance)
+
+    if user? then @updateUser(user, usage, allowance)
 
     @updateHousehold usage
 
@@ -100,22 +110,20 @@ models.MonthlyAllowance = BB.Model.extend({
     usage     = parseInt(usage)
     allowance = parseInt(allowance)
 
-    console.log "Adding user " + name + ", usage: " + usage + ", allowance: " + allowance
-
-    new_usage     = parseInt(@users.get(name).get("usage") || 0) + usage
-    new_allowance = parseInt(@users.get(name).get("allowance") || 0) + allowance
+    new_usage     = parseInt( (if @users.get(name) then @users.get(name).get("usage") else false) || 0) + usage
+    new_allowance = parseInt( (if @users.get(name) then @users.get(name).get("allowance") else false) || 0) + allowance
 
     user_data = {
                   id:         name
                   usage:      new_usage
-                  allowance:  new_allowance
-                }
+    }
+
+    if allowance > 0
+      user_data['allowance'] = new_allowance
 
     if @users.get(name)?
-      console.log "User exists, setting"
       @users.get(name).set user_data
     else
-      console.log "User doesn't exist, creating"
       @users.add( new models.Allowance user_data )
 
 })

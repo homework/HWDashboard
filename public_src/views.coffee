@@ -97,3 +97,11 @@ HBS.registerHelper("getMonth", (month_no) ->
             "November", "December"]
   return months[month_no-1]
 )
+
+HBS.registerHelper("deviceIdentifier", (device) ->
+
+  if device.name?
+    return device.name
+  else
+    return device.id
+)

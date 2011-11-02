@@ -25,7 +25,9 @@ class DashORM
     @mysql.useDatabase MYSQL_DATABASE
  
     @state_collector = new HWState( (state) =>
+
       @dashboardModel.monthlyallowances.add(state)
+
     )
 
   query: (model, parameters, response=0) =>
@@ -48,10 +50,22 @@ class DashORM
 
           if response
             response.json @dashboardModel.monthlyallowances.get(month_str).xport()
+            return
           else
             return @dashboardModel.monthlyallowances.get(month_str).xport()
 
+        state_model = @dashboardModel.monthlyallowances.get("STATE")
         month_model = @dashboardModel.monthlyallowances.get("STATE").clone()
+
+        month_model.household = state_model.household.clone()
+
+        state_model.devices.each( (device) =>
+          month_model.devices.add(device.clone())
+        )
+
+        state_model.users.each( (user) =>
+          month_model.users.add(user.clone())
+        )
 
         month_model.set( { id: month_str } )
 
@@ -62,8 +76,6 @@ class DashORM
         )
 
         month_totals.on 'row', (mysql_row) =>
-
-          console.log mysql_row
 
           if mysql_row.ip isnt '0.0.0.0'
 
@@ -78,13 +90,9 @@ class DashORM
                 month_model.updateUser username, parseInt(mysql_row['SUM(bytes)'])
 
             if username?
-              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)']), device.get("allowances"), username
-            else if device?
-              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)']), device.get("allowances")
+              month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)']), 0, undefined, username
             else
               month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)'])
-
-            month_model.updateHousehold mysql_row['SUM(bytes)']
 
         if this_month
           @dashboardModel.monthlyallowances.remove(month_str)
@@ -100,8 +108,6 @@ class DashORM
 
     item_str = ""
 
-    console.log @dashboardModel.monthlyallowances.pluck("id")
-
     for item in package
 
       item_date = new Date( parseInt(item.timestamp) * 100 )
@@ -115,17 +121,13 @@ class DashORM
 
       current_month.updateHousehold item.bytes
 
-      console.log item
-
       current_month.updateDevice item.ipaddr, item.bytes
 
       if current_month.devices.get(item.ipaddr).has("user")
-        current_month.updateUser device_state.get("user"), item.bytes
+        current_month.updateUser current_month.devices.get(item.ipaddr).get("user"), item.bytes
 
       if not @dashboardModel.monthlyallowances.get(item_str)
         @dashboardModel.monthlyallowances.add(current_month)
-
-    console.log item_str
 
     return @dashboardModel.monthlyallowances.get(item_str).xport()
   
