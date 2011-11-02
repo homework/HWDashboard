@@ -94,12 +94,14 @@ class DashORM
             else
               month_model.updateDevice mysql_row.ip, parseInt(mysql_row['SUM(bytes)'])
 
+        month_totals.on 'end', =>
+
+          if response then response.json month_model.xport() else return month_model.xport()
+
         if this_month
           @dashboardModel.monthlyallowances.remove(month_str)
           @dashboardModel.monthlyallowances.add(month_model)
 
-        if response then response.json month_model.xport() else return month_model.xport()
-           
       when "usage"
         console.log "No usage ORM"
         #multiple classes likely

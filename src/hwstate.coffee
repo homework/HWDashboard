@@ -23,13 +23,13 @@ class HWState extends EventEmitter
   updateState: (callback) ->
 
     @updateDeviceNames( =>
-      console.log "devices"
+      console.log "Collected device names"
       setTimeout( =>
         @updateUsers( =>
-          console.log "users"
+          console.log "Collected user information"
           setTimeout( =>
             @updateAllowances( =>
-              console.log "allowances"
+              console.log "Collected allowances"
               callback(@state)
             )
           ,1000)
