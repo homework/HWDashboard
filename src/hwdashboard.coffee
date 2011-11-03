@@ -11,7 +11,6 @@ JSRPC             = require('./jsrpc').jsrpc
 
 models = require('../public/scripts/models').models
 
-dashORM           = new DashORM
 log               = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
 hwdb_stream       = new JSRPC
 hwdb_query        = new JSRPC
@@ -35,6 +34,7 @@ io_server.sockets.on "connection", (socket) ->
   socket.on "cli", (d) ->
     socket.emit "updateView", dashORM.query("allowances", "10-2011")
 
+dashORM           = new DashORM io_server.sockets.in("allowances").emit
 # === Live Data ===
 package_timeout = 0
 package_data = []
@@ -47,7 +47,8 @@ hwdb_stream.on('message', (msg) ->
     package_data.push pkg for pkg in msg.slice(1)
     if package_timeout then clearTimeout(package_timeout)
     package_timeout = setTimeout( ->
-      io_server.sockets.in('allowances').emit 'updateView', dashORM.liveUpdate(package_data)
+      #io_server.sockets.in('allowances').emit 'updateView', 
+      dashORM.liveUpdate(package_data)
       package_data.length = 0
     , 3000)
 

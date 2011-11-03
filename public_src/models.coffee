@@ -40,9 +40,26 @@ models.MonthlyAllowance = BB.Model.extend({
 
   initialize: (args) ->
     @id = args.id
+    @socket = args.socket
     @household  = new models.Allowance( { id: "household", usage: 0 } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
+
+    @household.bind "change", =>
+      console.log "Household changed!"
+      if @socket isnt {}
+        console.log @socket
+        #console.log @socket.in('allowances').emit "updateView", @
+
+
+    @users.bind "change", =>
+      console.log "Users changed!"
+      if @socket isnt {}
+        @socket("updateView", @)
+        #console.log @socket.in('allowances').emit "updateView", @
+
+    @devices.bind "change", =>
+      console.log "Devices changed!"
 
   # (usage)                 -> Increment usage
   # (usage || 0, allowance) -> Set allowance

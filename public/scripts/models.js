@@ -1,5 +1,6 @@
 (function() {
   var BB, HBS, models, __;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   if (typeof exports !== 'undefined') {
     __ = require('underscore')._;
     BB = require('backbone');
@@ -35,12 +36,28 @@
   models.MonthlyAllowance = BB.Model.extend({
     initialize: function(args) {
       this.id = args.id;
+      this.socket = args.socket;
       this.household = new models.Allowance({
         id: "household",
         usage: 0
       });
       this.users = new models.Allowances();
-      return this.devices = new models.Allowances();
+      this.devices = new models.Allowances();
+      this.household.bind("change", __bind(function() {
+        console.log("Household changed!");
+        if (this.socket !== {}) {
+          return console.log(this.socket);
+        }
+      }, this));
+      this.users.bind("change", __bind(function() {
+        console.log("Users changed!");
+        if (this.socket !== {}) {
+          return this.socket("updateView", this);
+        }
+      }, this));
+      return this.devices.bind("change", __bind(function() {
+        return console.log("Devices changed!");
+      }, this));
     },
     updateHousehold: function(usage, allowance) {
       var current_usage, household_data, total_usage;

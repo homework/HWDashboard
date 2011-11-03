@@ -6,19 +6,26 @@ if(typeof exports isnt 'undefined')
 else
   BB = Backbone
   $j = jQuery.noConflict()
-  __ = _
+#  __ = _
   HBS = Handlebars
 
 DashboardViews = this.DashboardViews = {}
 
 DashboardViews.MonthlyAllowanceView = BB.View.extend({
 
+  getMonth: (date) ->
+
+    $j.get("/allowances/" + date.getFullYear() + "/" + parseInt(date.getMonth()+1), (data) =>
+      @render data
+    )
+
   el: $j('#dashboard')
 
   render: (m) ->
+
     @model = new models.MonthlyAllowance().mport(m)
     id_date = @model.id.split("-")
-    console.log @model
+
     js =
       {
         month:      id_date[1]
@@ -29,24 +36,25 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
       }
 
     $j.get("/views/allowances.ejs", (data) =>
+
       template = HBS.compile data
       $j("#dashboard").html(template(js))
 
-      $j("#prev").bind('click', () =>
+      $j("#prev").bind('click', =>
         id_date = @model.id.split("-")
         prev_date = new Date(id_date[0], id_date[1]-2)
-        $j.get("/allowances/" + prev_date.getFullYear() + "/" + parseInt(prev_date.getMonth()+1), (data) =>
-          @render data
-        )
+
+        @getMonth(prev_date)
       )
 
       $j("#next").bind('click', () =>
         id_date = @model.id.split("-")
         next_date = new Date(id_date[0], id_date[1])
-        $j.get("/allowances/" + next_date.getFullYear() + "/" + parseInt(next_date.getMonth()+1), (data) =>
-          @render data
-        )
+
+        @getMonth(next_date)
       )
+
+      #$j(".hw_sub_title").bind
 
       current_date = new Date()
 

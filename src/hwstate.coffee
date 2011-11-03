@@ -7,10 +7,12 @@ models = require('../public/scripts/models').models
 
 class HWState extends EventEmitter
 
-  constructor: (callback) ->
+  constructor: (socket, callback) ->
+
+    console.log "Passing socket: " + socket
 
     @state = new models.MonthlyAllowance(
-              { id: "STATE" }
+              { id: "STATE", socket: socket }
     )
 
     @hwdb = new JSRPC("127.0.0.1", 987)
@@ -46,7 +48,7 @@ class HWState extends EventEmitter
 
           @state.updateDevice device_row.ip, 0, 0, device_row.name
       
-      if callback then callback() else @emit 'state', @state
+      if callback then callback()
  
     @hwdb.query("SQL:select * from DeviceNames")
 
@@ -59,7 +61,7 @@ class HWState extends EventEmitter
 
           @state.updateDevice user_row.ip, 0, 0, undefined, user_row.name
       
-      if callback then callback() else @emit 'state', @state
+      if callback then callback()
 
     @hwdb.query("SQL:select * from Users")
 
@@ -75,7 +77,7 @@ class HWState extends EventEmitter
           else
             @state.updateDevice allowance_row.ip, 0, allowance_row.allowance
 
-      if callback then callback() else @emit 'state', @state
+      if callback then callback()
 
     @hwdb.query("SQL:select * from Allowances")
 

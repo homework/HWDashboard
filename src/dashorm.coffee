@@ -11,7 +11,9 @@ HWState = require('./hwstate').hwstate
 
 class DashORM
   
-  constructor: ->
+  constructor: (socketio_server) ->
+
+    @socketio = socketio_server
 
     @dashboardModel = new models.DashboardModel()
     
@@ -24,10 +26,8 @@ class DashORM
 
     @mysql.useDatabase MYSQL_DATABASE
  
-    @state_collector = new HWState( (state) =>
-
+    @state_collector = new HWState( @socketio, (state) =>
       @dashboardModel.monthlyallowances.add(state)
-
     )
 
   query: (model, parameters, response=0) =>
@@ -119,7 +119,7 @@ class DashORM
 
       if current_month is undefined
         current_month = @dashboardModel.monthlyallowances.get("STATE").clone()
-        current_month.set { id: item_str }
+        current_month.set { id: item_str, socket: @socketio.sockets }
 
       current_month.updateHousehold item.bytes
 
@@ -131,6 +131,6 @@ class DashORM
       if not @dashboardModel.monthlyallowances.get(item_str)
         @dashboardModel.monthlyallowances.add(current_month)
 
-    return @dashboardModel.monthlyallowances.get(item_str).xport()
+    #return @dashboardModel.monthlyallowances.get(item_str).xport()
   
 exports.dashorm = DashORM

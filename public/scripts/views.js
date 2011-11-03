@@ -9,17 +9,20 @@
   } else {
     BB = Backbone;
     $j = jQuery.noConflict();
-    __ = _;
     HBS = Handlebars;
   }
   DashboardViews = this.DashboardViews = {};
   DashboardViews.MonthlyAllowanceView = BB.View.extend({
+    getMonth: function(date) {
+      return $j.get("/allowances/" + date.getFullYear() + "/" + parseInt(date.getMonth() + 1), __bind(function(data) {
+        return this.render(data);
+      }, this));
+    },
     el: $j('#dashboard'),
     render: function(m) {
       var id_date, js;
       this.model = new models.MonthlyAllowance().mport(m);
       id_date = this.model.id.split("-");
-      console.log(this.model);
       js = {
         month: id_date[1],
         year: id_date[0],
@@ -35,17 +38,13 @@
           var prev_date;
           id_date = this.model.id.split("-");
           prev_date = new Date(id_date[0], id_date[1] - 2);
-          return $j.get("/allowances/" + prev_date.getFullYear() + "/" + parseInt(prev_date.getMonth() + 1), __bind(function(data) {
-            return this.render(data);
-          }, this));
+          return this.getMonth(prev_date);
         }, this));
         $j("#next").bind('click', __bind(function() {
           var next_date;
           id_date = this.model.id.split("-");
           next_date = new Date(id_date[0], id_date[1]);
-          return $j.get("/allowances/" + next_date.getFullYear() + "/" + parseInt(next_date.getMonth() + 1), __bind(function(data) {
-            return this.render(data);
-          }, this));
+          return this.getMonth(next_date);
         }, this));
         current_date = new Date();
         if (current_date.getUTCFullYear() === parseInt(id_date[0]) && (current_date.getUTCMonth() + 1) === parseInt(id_date[1])) {
