@@ -1,10 +1,6 @@
 current_view = 0
 
-socket = io.connect()
-
-socket.on 'updateView', (model) ->
-  console.log "Got update"
-  current_view.render model
+client_stream = io.connect()
 
 $j(document).ready( ->
 
@@ -17,6 +13,21 @@ $j(document).ready( ->
   else
     base    = path
 
+    client_stream.emit "joinRoom", base, ->
+      console.log "r"
+
+    #Model constraints
+    client_stream.on 'updateView', (update) ->
+
+      switch base
+
+        when "allowances"
+          if current_view.model.id is update['id']
+            current_view.render update['model']
+
+        when "usage"
+          console.log "I don't exist"
+
     #Default models/views
     switch base
 
@@ -28,11 +39,13 @@ $j(document).ready( ->
         )
         current_date = new Date()
         params = current_date.getFullYear() + "/" + (parseInt(current_date.getMonth()+1))
+
       when "usage"
         console.log "I don't exist"
 
-  $j.get("/" + base + "/" + params, (data) ->
-    console.log data
-    current_view.render data
-  )
+    $j.get("/" + base + "/" + params, (data) ->
+      current_view.render data
+    )
 )
+
+window.client_stream = client_stream

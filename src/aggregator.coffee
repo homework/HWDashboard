@@ -71,6 +71,8 @@ class Aggregator
                                       )
           )
 
+          console.log date_last, expected_last_date
+
           if date_last < expected_last_date
             missing_hours = ((expected_last_date - date_last) / 1000) / 60 / 60
             if missing_hours >= (3600 / @hwdb_aggregator.getQueryInterval() )

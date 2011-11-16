@@ -7,12 +7,10 @@ models = require('../public/scripts/models').models
 
 class HWState extends EventEmitter
 
-  constructor: (socket, callback) ->
-
-    console.log "Passing socket: " + socket
+  constructor: (callback) ->
 
     @state = new models.MonthlyAllowance(
-              { id: "STATE", socket: socket }
+              { id: "STATE" }
     )
 
     @hwdb = new JSRPC("127.0.0.1", 987)

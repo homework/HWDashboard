@@ -1,40 +1,37 @@
 LOG_LEVEL       = 5 # Log.NOTICE
 DASHBOARD_PORT  = 80
 
-sio_app           = require('socket.io')
 express           = require('express')
 path              = require('path')
 
 DashORM           = require('./dashorm').dashorm
 HWDashboardLogger = require('./logger').logger
-JSRPC             = require('./jsrpc').jsrpc
+JsRPC             = require('./jsrpc').jsrpc
+StreamProxy       = require('./streamproxy').streamproxy
 
 models = require('../public/scripts/models').models
 
 log               = new HWDashboardLogger "hwdbdashboard", LOG_LEVEL
-hwdb_stream       = new JSRPC
-hwdb_query        = new JSRPC
+hwdb_stream       = new JsRPC
+hwdb_query        = new JsRPC
 
+"""
 Aggregator = require('./aggregator').aggregator
 @aggregator = new Aggregator
+"""
 
 log.notice "Starting HWDashboard"
 
-rest_server = express.createServer()
-io_server = sio_app.listen(rest_server)
+rest_server   = express.createServer()
+client_stream = new StreamProxy rest_server
 
 rest_server.configure( ->
   rest_server.use express.static(__dirname + '/../public')
   rest_server.set 'views', __dirname + '/../public/views'
 )
 
-io_server.sockets.on "connection", (socket) ->
-  
-  socket.join('allowances')
-  socket.on "cli", (d) ->
-    socket.emit "updateView", dashORM.query("allowances", "10-2011")
+dashORM           = new DashORM #io_server.sockets.in("allowances").emit
 
-dashORM           = new DashORM io_server.sockets.in("allowances").emit
 # === Live Data ===
 package_timeout = 0
 package_data = []
@@ -47,7 +44,8 @@ hwdb_stream.on('message', (msg) ->
     package_data.push pkg for pkg in msg.slice(1)
     if package_timeout then clearTimeout(package_timeout)
     package_timeout = setTimeout( ->
-      #io_server.sockets.in('allowances').emit 'updateView', 
+      #!!# #io_server.sockets.in('allowances').emit 'updateView', 
+      #client_stream.push 
       dashORM.liveUpdate(package_data)
       package_data.length = 0
     , 3000)
@@ -56,11 +54,11 @@ hwdb_stream.on('message', (msg) ->
 )
 
 hwdb_stream.on('timedout', ->
-  log.error "JSRPC timed out, process exiting"
+  log.error "JsRPC timed out, process exiting"
   process.exit(1)
 )
 
-log.info "JSRPC setup executed"
+log.info "JsRPC setup executed"
 
 rest_server.get('/', (req,res) ->
   res.redirect('/allowances')

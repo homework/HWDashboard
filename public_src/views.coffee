@@ -85,7 +85,7 @@ HBS.registerHelper("toGigabytesAllowance", (bytes) ->
 )
 
 HBS.registerHelper("limitStyling", (usage, allowance) ->
-  console.log usage, allowance
+
   if (usage isnt "NaN" and usage >= 0) and (allowance isnt "NaN" and allowance >= 0)
     if usage >= allowance
       return "color:#d00000"

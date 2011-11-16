@@ -84,7 +84,6 @@
     }
   });
   HBS.registerHelper("limitStyling", function(usage, allowance) {
-    console.log(usage, allowance);
     if ((usage !== "NaN" && usage >= 0) && (allowance !== "NaN" && allowance >= 0)) {
       if (usage >= allowance) {
         return "color:#d00000";

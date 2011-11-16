@@ -1,10 +1,13 @@
 (function() {
-  var BB, HBS, models, __;
+  var BB, HBS, StreamProxy, client_stream, models, server, __;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-  if (typeof exports !== 'undefined') {
+  server = typeof exports !== 'undefined' ? true : false;
+  if (server) {
     __ = require('underscore')._;
     BB = require('backbone');
     HBS = require('hbs');
+    StreamProxy = require('../../lib/streamproxy').streamproxy;
+    client_stream = new StreamProxy;
   } else {
     BB = Backbone;
     __ = _;
@@ -43,21 +46,31 @@
       });
       this.users = new models.Allowances();
       this.devices = new models.Allowances();
+      this.changeTimer = 0;
       this.household.bind("change", __bind(function() {
-        console.log("Household changed!");
-        if (this.socket !== {}) {
-          return console.log(this.socket);
+        if (server) {
+          return this.setChangeTimer();
         }
       }, this));
       this.users.bind("change", __bind(function() {
-        console.log("Users changed!");
-        if (this.socket !== {}) {
-          return this.socket("updateView", this);
+        if (server) {
+          return this.setChangeTimer();
         }
       }, this));
       return this.devices.bind("change", __bind(function() {
-        return console.log("Devices changed!");
+        if (server) {
+          return this.setChangeTimer();
+        }
       }, this));
+    },
+    setChangeTimer: function() {
+      clearTimeout(this.changeTimer);
+      return this.changeTimer = setTimeout(__bind(function() {
+        return client_stream.push("allowances", "updateView", {
+          id: this.id,
+          model: this.xport()
+        });
+      }, this), 1000);
     },
     updateHousehold: function(usage, allowance) {
       var current_usage, household_data, total_usage;

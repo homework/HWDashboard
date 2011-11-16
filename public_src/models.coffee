@@ -1,7 +1,12 @@
-if(typeof exports isnt 'undefined')
+server = if (typeof exports isnt 'undefined') then true else false
+
+if server
   __ = require('underscore')._
   BB = require('backbone')
   HBS = require('hbs')
+  StreamProxy = require('../../lib/streamproxy').streamproxy
+  client_stream = new StreamProxy
+  #client_stream.setup()
 else
   BB = Backbone
   __ = _
@@ -44,22 +49,25 @@ models.MonthlyAllowance = BB.Model.extend({
     @household  = new models.Allowance( { id: "household", usage: 0 } )
     @users      = new models.Allowances()
     @devices    = new models.Allowances()
+    @changeTimer = 0
 
     @household.bind "change", =>
-      console.log "Household changed!"
-      if @socket isnt {}
-        console.log @socket
-        #console.log @socket.in('allowances').emit "updateView", @
-
+      if server then @setChangeTimer()
 
     @users.bind "change", =>
-      console.log "Users changed!"
-      if @socket isnt {}
-        @socket("updateView", @)
-        #console.log @socket.in('allowances').emit "updateView", @
+      if server then @setChangeTimer()
 
     @devices.bind "change", =>
-      console.log "Devices changed!"
+      if server then @setChangeTimer()
+
+  setChangeTimer: ->
+
+    clearTimeout(@changeTimer)
+
+    @changeTimer = setTimeout( =>
+      client_stream.push "allowances", "updateView", { id: @id, model: @.xport() }
+    ,1000)
+
 
   # (usage)                 -> Increment usage
   # (usage || 0, allowance) -> Set allowance
