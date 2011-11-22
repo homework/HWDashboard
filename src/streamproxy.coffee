@@ -21,11 +21,11 @@ class StreamProxy extends EventEmitter
           socket.join model
 
         socket.on "updateModel", (model) ->
-
           @emit "message", model
 
   push: (room, command, model) ->
 
-    StreamProxy::socketIO.sockets.in(room).emit command, model
+    if StreamProxy::socketIO
+      StreamProxy::socketIO.sockets.in(room).emit command, model
 
 exports.streamproxy = StreamProxy

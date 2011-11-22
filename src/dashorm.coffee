@@ -11,7 +11,7 @@ HWState = require('./hwstate').hwstate
 
 class DashORM
   
-  constructor: () ->
+  constructor: (callback) ->
 
     @dashboardModel = new models.DashboardModel()
     
@@ -22,10 +22,14 @@ class DashORM
       password:   MYSQL_PASSWORD
     })
 
+    @mysql.once 'error', (err) ->
+      if err['code'] is "ECONNREFUSED" then console.log "Could not connect to MySQL server"
+
     @mysql.useDatabase MYSQL_DATABASE
  
     @state_collector = new HWState( (state) =>
       @dashboardModel.monthlyallowances.add(state)
+      callback()
     )
 
   query: (model, parameters, response=0) =>
@@ -102,7 +106,6 @@ class DashORM
 
       when "usage"
         console.log "No usage ORM"
-        #multiple classes likely
 
   liveUpdate: (package) ->
 

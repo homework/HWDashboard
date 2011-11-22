@@ -34,6 +34,7 @@
         var current_date, template;
         template = HBS.compile(data);
         $j("#dashboard").html(template(js));
+        $j("#dashboard").show();
         $j("#prev").bind('click', __bind(function() {
           var prev_date;
           id_date = this.model.id.split("-");

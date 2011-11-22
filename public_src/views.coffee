@@ -40,6 +40,8 @@ DashboardViews.MonthlyAllowanceView = BB.View.extend({
       template = HBS.compile data
       $j("#dashboard").html(template(js))
 
+      $j("#dashboard").show()
+
       $j("#prev").bind('click', =>
         id_date = @model.id.split("-")
         prev_date = new Date(id_date[0], id_date[1]-2)
